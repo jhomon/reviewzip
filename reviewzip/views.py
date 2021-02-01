@@ -41,7 +41,7 @@ class ReviewListView(ListView):
 
     model = Review
     template_name = 'reviewzip/list.html'
-    paginate_by = 10
+    paginate_by = 6
     
     """ 검색 결과에 해당하는 쿼리 조회 """
     def get_queryset(self):
