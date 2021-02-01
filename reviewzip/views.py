@@ -27,6 +27,13 @@ class ReviewDetailView(DetailView):
     model = Review
     template_name = "reviewzip/detail.html"
 
+    def get_object(self):
+        review = super().get_object()
+        # 조회수 1 증가
+        review.watch += 1
+        review.save()
+        return review
+
     
 
 class ReviewListView(ListView):
