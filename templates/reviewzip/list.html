@@ -4,7 +4,7 @@
 
 {% if object_list.count > 0 %}
 <div class="card-deck mb-5">
-    {% for review in object_list %}
+    {% for review in page_obj %}
     <a class="card shadow mb-5" href="{% url 'reviewzip:detail' review.id %}">
         <img src={{ review.thumbnail.url }} class="card-img-top" style="height:70%;">
         <div class="card-body">
@@ -15,6 +15,44 @@
     </a>
     {% endfor %}
 </div>
+
+<nav aria-label="Page navigation">
+    <span class="d-block text-center mb-2">
+        {{ page_obj.paginator.num_pages }} 페이지 중 {{ page_obj.number }} 페이지
+    </span>
+    <ul class="pagination justify-content-center">
+        <!-- 이전 페이지 -->
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for page_number in page_obj.paginator.page_range %}
+            {% if page_number == page_obj.number %}
+            <li class="page-item active"><a class="page-link" style="color:white;" href="?page={{ page_number }}">
+                {{ page_number }}
+            </a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_number }}">
+                {{ page_number }}
+            </a></li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- 다음 페이지 -->
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
 {% else %}
 <div class="m-5 d-flex flex-column align-items-center">
     <h2 class="mb-5">해당 제품에 대한 리뷰집이 존재하지 않습니다</h2>
