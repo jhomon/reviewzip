@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- 제품 기본 정보 -->
+<div class="mb-5 d-flex flex-column align-items-center">
+    <h3 class="mb-3">{{ object.name }}</h3>
+    <img class="mb-3" style="display: block;" src={{ object.thumbnail.url }} alt="{{ object.name }} 이미지">
+    <a href="{{ object.url }}"><button class="btn btn-outline-info">구매하기</button></a>
+</div>
+
+<!-- 키워드 컨테이너 -->
+<div class="py-3 my-5 container border-top">
+    <div class="row">
+        <!-- 긍정 키워드 -->
+        <div class="col-md-6 col-sm-12 positive">
+            <h4 class="my-3 pl-2">긍정 키워드</h4>
+            <div class="d-flex flex-wrap">
+                {% for positive_keyword in object.positive_keyword.all %}
+                <button class="btn btn-success rounded-pill m-2" style="height: 2.5rem;">{{ positive_keyword }}</button>
+                {% empty %}
+                <div>해당하는 키워드가 없습니다</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 부정 키워드 -->
+        <div class="col-md-6 col-sm-12 negative">
+            <h4 class="my-3 pl-2">부정 키워드</h4>
+            <div class="d-flex flex-wrap">
+                {% for negative_keyword in object.negative_keyword.all %}
+                <button class="btn btn-danger rounded-pill m-2" style="height: 2.5rem;">{{ negative_keyword }}</button>
+                {% empty %}
+                <div>해당하는 키워드가 없습니다</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 키워드에 해당하는 리뷰 -->
+<div class="py-3 my-5 container border-top">
+    <h5 class="text-center">키워드를 클릭하면 해당 키워드를 포함하는 리뷰를 보여줍니다</h5>
+</div>
+{% endblock %}

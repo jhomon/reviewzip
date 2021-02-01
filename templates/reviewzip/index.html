@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- 최신 리뷰집 5개 -->
+<div class="mb-5">
+    <h4 class="mb-4">최근 올라온 리뷰집</h4>
+    <div class="card-deck mb-5">
+        {% for recent_reviewzip in recent_reviewzips %}
+        <a class="card shadow mb-5" href="{% url 'reviewzip:detail' recent_reviewzip.id %}">
+            <img src={{ recent_reviewzip.thumbnail.url }} class="card-img-top" style="height:70%;">
+            <div class="card-body">
+                <h5 class="card-title text-truncate">
+                    {{ recent_reviewzip.name }}
+                </h5>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 조회수 높은 리뷰집 5개 -->
+<div class="mb-5">
+    <h4 class="mb-4">인기 있는 리뷰집</h4>
+    <div class="card-deck mb-5">
+        {% for popular_reviewzip in popular_reviewzips %}
+        <a class="card shadow mb-5" href="{% url 'reviewzip:detail' popular_reviewzip.id %}">
+            <img src={{ popular_reviewzip.thumbnail.url }} class="card-img-top" style="height:70%;">
+            <div class="card-body">
+                <h5 class="card-title text-truncate">
+                    {{ popular_reviewzip.name }}
+                </h5>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
