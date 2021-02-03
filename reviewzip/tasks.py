@@ -1,5 +1,5 @@
 from celery import shared_task
-from .models import Review, Sentence, Keyword
+from reviewzip.models import Review, Sentence, Keyword, PendingUrl
 
 """ 입력받은 리뷰 csv 파일로부터
     해당 리뷰들을 문장 단위로 쪼개고 긍정, 부정을 판단
@@ -13,3 +13,9 @@ def predict_sentiment(file):
 @shared_task
 def match_keyword(sentence):
     pass
+
+@shared_task
+def add_product_url(product_url):
+    # 등록되어 있지 않은 url
+    PendingUrl.objects.create(url=product_url)
+    

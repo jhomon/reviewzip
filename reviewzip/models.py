@@ -25,7 +25,7 @@ class Review(models.Model):
 
     name = models.CharField(max_length=30) # 상품명
     thumbnail = models.ImageField() # 제품 썸네일
-    url = models.URLField() # 제품 구매 페이지 url
+    url = models.URLField(unique=True) # 제품 구매 페이지 url
     create_date = models.DateTimeField(auto_now_add=True) # 업로드한 날짜
     watch = models.IntegerField(default=0) # 조회수
     positive_keyword = models.ManyToManyField(Keyword, blank=True, related_name="positive_keyword") # 긍정 키워드
@@ -35,3 +35,13 @@ class Review(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class PendingUrl(models.Model):
+    """ 등록 대기 중인 리뷰 """
+
+    url = models.URLField(unique=True) # 등록 대기 중인 제품 구매 페이지 url
+    create_date = models.DateTimeField(auto_now_add=True) # 등록 요청된 날짜
+    def __str__(self):
+        return self.url
+    

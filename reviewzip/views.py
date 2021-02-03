@@ -4,7 +4,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.db.models import Q
 from django.contrib import messages
-from .models import Review
+from .models import Review, PendingUrl
 from .tasks import add_product_url
 
 # Create your views here.
@@ -57,23 +57,26 @@ class ReviewListView(ListView):
         return review_list
 
 
-""" POST로 온 url에 해당하는 리뷰가 등록되어 있는지 확인
-    없으면 데이터베이스에 추가 
-"""
-# 일단 무조건 요청 url 추가하게 celery task에 넣음
 def add_review(request):
+    """ POST로 넘겨받은 등록 요청 url이 존재하는 지 검토 후 등록 """
     if request.method == 'POST':
         product_url = request.POST.get('product_url')
         if product_url == '':
             messages.warning(request, 'url을 입력해주세요')
         else:
             try:
-                # 해당 url이 등록되어 있으면
-                obj = Review.objects.get(url=product_url)
+                # 해당 url의 리뷰가 이미 등록되어 있으면
+                Review.objects.get(url=product_url)
                 messages.warning(request, '해당 url은 이미 등록되어 있습니다. 해당 url을 검색해보세요.')
             except:
-                # 등록되어 있지 않으면
-                messages.info(request, '해당 url 등록 요청이 완료 되었습니다. 등록되기까지 시간이 걸립니다.')
-                add_product_url.delay(product_url)
+                # 해당 url의 리뷰가 등록되어 있지 않으면
+                try:
+                    # 해당 url이 등록 대기 중이면
+                    PendingUrl.objects.get(url=product_url)
+                    messages.warning(request, '해당 url은 등록 요청이 되어 검토 중입니다.')
+                except:
+                    # 해당 url 리뷰도 존재하지 않고 등록 대기 중도 아니면
+                    messages.info(request, '해당 url 등록 요청이 완료 되었습니다. 등록되기까지 시간이 걸립니다.')
+                    add_product_url.delay(product_url)
         
         return render(request, 'reviewzip/list.html')
