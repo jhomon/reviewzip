@@ -24,8 +24,9 @@ class Review(models.Model):
     """ 리뷰 종합 분석 """
 
     name = models.CharField(max_length=30) # 상품명
-    thumbnail = models.ImageField() # 제품 썸네일
+    thumbnail = models.ImageField(upload_to="thumbnails/") # 제품 썸네일
     url = models.URLField(unique=True) # 제품 구매 페이지 url
+    csv = models.FileField(upload_to="review_files/", null=True, blank=True) # 리뷰 파일.csv
     create_date = models.DateTimeField(auto_now_add=True) # 업로드한 날짜
     watch = models.IntegerField(default=0) # 조회수
     positive_keyword = models.ManyToManyField(Keyword, blank=True, related_name="positive_keyword") # 긍정 키워드

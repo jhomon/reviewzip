@@ -15,6 +15,6 @@ def match_keyword(sentence):
     pass
 
 @shared_task
-def pend_product_url(product_url):
+def pend_product_url(self, product_url):
     # 등록되어 있지 않은 url
     PendingUrl.objects.create(url=product_url)
