@@ -6,7 +6,7 @@
 <!-- 검색 결과 -->
 <div class="card-deck mb-5">
     {% for review in page_obj %}
-    <a class="card shadow-sm mb-5 text-decoration-none text-reset"  style="flex-basis: 30%;"
+    <a class="card shadow-sm mb-5 text-decoration-none text-reset flex-grow-0"  style="flex-basis: 30%"
     href="{% url 'reviewzip:detail' review.id %}">
         <img src={{ review.thumbnail.url }} class="card-img-top" style="height:70%;">
         <div class="card-body">
