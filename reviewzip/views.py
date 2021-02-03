@@ -5,7 +5,7 @@ from django.views.generic.list import ListView
 from django.db.models import Q
 from django.contrib import messages
 from .models import Review, PendingUrl
-from .tasks import add_product_url
+from .tasks import pend_product_url
 
 # Create your views here.
 class IndexView(TemplateView):
@@ -77,6 +77,6 @@ def add_review(request):
                 except:
                     # 해당 url 리뷰도 존재하지 않고 등록 대기 중도 아니면
                     messages.info(request, '해당 url 등록 요청이 완료 되었습니다. 등록되기까지 시간이 걸립니다.')
-                    add_product_url.delay(product_url)
+                    pend_product_url.delay(product_url)
         
         return render(request, 'reviewzip/list.html')

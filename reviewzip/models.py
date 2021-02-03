@@ -42,6 +42,7 @@ class PendingUrl(models.Model):
 
     url = models.URLField(unique=True) # 등록 대기 중인 제품 구매 페이지 url
     create_date = models.DateTimeField(auto_now_add=True) # 등록 요청된 날짜
+    
     def __str__(self):
         return self.url
     
