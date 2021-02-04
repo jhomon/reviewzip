@@ -1,5 +1,5 @@
 .vscode
-env
+env3.8
 db.sqlite3
 *.pyc
 __pycache__
