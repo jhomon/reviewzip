@@ -5,7 +5,7 @@ from django.db import models
 class Sentence(models.Model):
     """ 리뷰 문장 단위 """
 
-    content = models.TextField()
+    content = models.TextField(unique=True)
 
     def __str__(self):
         return self.content
@@ -14,7 +14,7 @@ class Sentence(models.Model):
 class Keyword(models.Model):
     """ 리뷰 키워드 """
     
-    name = models.CharField(max_length=10)
+    name = models.CharField(max_length=10, unique=True)
     sentence = models.ManyToManyField(Sentence)
 
     def __str__(self):
