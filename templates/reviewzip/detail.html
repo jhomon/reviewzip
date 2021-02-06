@@ -3,42 +3,123 @@
 {% block content %}
 <!-- 제품 기본 정보 -->
 <div class="mb-5 d-flex flex-column align-items-center">
-    <h3 class="mb-3">{{ object.name }}</h3>
+    <h3 id="review_name" class="mb-3">{{ object.name }}</h3>
     <img class="mb-3" style="display: block;" src={{ object.thumbnail.url }} alt="{{ object.name }} 이미지">
     <a href="{{ object.url }}"><button class="btn btn-outline-info">구매하기</button></a>
 </div>
 
-<!-- 키워드 컨테이너 -->
-<div class="py-3 my-5 container border-top">
-    <div class="row">
-        <!-- 긍정 키워드 -->
-        <div class="col-md-6 col-sm-12 positive">
-            <h4 class="my-3 pl-2">긍정 키워드</h4>
-            <div class="d-flex flex-wrap">
-                {% for positive_keyword in object.positive_keyword.all %}
-                <button class="btn btn-success rounded-pill m-2" style="height: 2.5rem;">{{ positive_keyword }}</button>
-                {% empty %}
-                <div>해당하는 키워드가 없습니다</div>
-                {% endfor %}
+<!-- vue 앱 -->
+<div id='app'>
+    <!-- 키워드 컨테이너 -->
+    <div class="py-3 my-5 container border-top">
+        <div class="row">
+            <!-- 긍정 키워드 -->
+            <div class="col-md-6 col-sm-12 positive">
+                <h4 class="my-3 pl-2">긍정 키워드</h4>
+                <div class="d-flex flex-wrap">
+                    {% for positive_keyword in object.positive_keyword.all %}
+                    <button v-on:click="prepare_fetch($event)"
+                    class="positive keyword btn btn-success rounded-pill m-2" 
+                    style="height: 2.5rem;">{{ positive_keyword }}</button>
+                    {% empty %}
+                    <div>해당하는 키워드가 없습니다</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 부정 키워드 -->
+            <div class="col-md-6 col-sm-12 negative">
+                <h4 class="my-3 pl-2">부정 키워드</h4>
+                <div class="d-flex flex-wrap">
+                    {% for negative_keyword in object.negative_keyword.all %}
+                    <button v-on:click="prepare_fetch($event)" 
+                    class="negative keyword btn btn-danger rounded-pill m-2" 
+                    style="height: 2.5rem;">{{ negative_keyword }}</button>
+                    {% empty %}
+                    <div>해당하는 키워드가 없습니다</div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- 부정 키워드 -->
-        <div class="col-md-6 col-sm-12 negative">
-            <h4 class="my-3 pl-2">부정 키워드</h4>
-            <div class="d-flex flex-wrap">
-                {% for negative_keyword in object.negative_keyword.all %}
-                <button class="btn btn-danger rounded-pill m-2" style="height: 2.5rem;">{{ negative_keyword }}</button>
-                {% empty %}
-                <div>해당하는 키워드가 없습니다</div>
-                {% endfor %}
+    <!-- 키워드에 해당하는 리뷰 컨테이너 -->
+    <div class="py-3 my-5 container border-top">
+        <!-- 컨테이너 헤딩 -->
+        <h5 v-if="!selected_keyword" class="text-center">
+            키워드를 클릭하면 해당 키워드를 포함하는 리뷰를 보여줍니다
+        </h5>
+        <h5 v-else class="text-center">
+            "[[ selected_keyword ]]" 포함하는 리뷰 문장
+        </h5>
+
+        <!-- 클릭한 키워드를 포함하는 리뷰 -->
+        <div class="container my-3">
+            <div v-if="loading">리뷰 문장을 검색 중입니다</div>
+            <div v-for="sentence in sentences">
+                <div class="py-3 border-bottom">[[ sentence.content ]]</div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- 키워드에 해당하는 리뷰 -->
-<div class="py-3 my-5 container border-top">
-    <h5 class="text-center">키워드를 클릭하면 해당 키워드를 포함하는 리뷰를 보여줍니다</h5>
-</div>
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    $(".keyword").click(function() {
+        $(this).toggleClass("btn-secondary");
+        alert("clicked");
+    });
+
+    axios.defaults.xsrfCookieName = 'csrftoken';
+    axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+
+    var app = new Vue({
+        delimiters: ["[[", "]]"],
+        el: '#app',
+        data: {
+           selected_keyword: '',
+           review_name: '',
+           positive: '',
+           sentences: null,
+           errored: false,
+           loading: false
+        },
+        methods: {
+            prepare_fetch: function(event) {
+                this.selected_keyword = event.target.textContent
+                this.review_name = document.getElementById("review_name").textContent
+                console.log(event.target.className)
+                if (event.target.className.includes('positive')) {
+                    this.positive = 'positive'
+                } else {
+                    this.positive = 'negative'
+                }
+                this.loading = true
+                app.fetch_sentences_with_keyword()
+            },
+            fetch_sentences_with_keyword: function() {
+                axios.get('/api/get/review/sentences', {
+                    params: {
+                        keyword: app.selected_keyword,
+                        review_name: app.review_name,
+                        positive: app.positive
+                    }
+                })
+                .then(function(response) {
+                    app.sentences = response.data
+                })
+                .catch(function(error) {
+                    console.log(error)
+                    app.errored = true
+                })
+                .finally(function() {
+                    app.loading = false
+                })
+            }
+        }
+    });
+</script>
 {% endblock %}

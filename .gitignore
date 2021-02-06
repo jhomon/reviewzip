@@ -3,3 +3,5 @@ env3.8
 db.sqlite3
 *.pyc
 __pycache__
+thumbnails
+review_files

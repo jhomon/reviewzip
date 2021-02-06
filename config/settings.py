@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'reviewzip.apps.ReviewzipConfig',
+    'api.apps.ApiConfig',
     'django_celery_beat',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -128,3 +130,10 @@ STATICFILES_DIRS = [
 import os
 MEDIA_ROOT = BASE_DIR
 MEDIA_URL = '/media/'
+
+
+#django rest framework
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}

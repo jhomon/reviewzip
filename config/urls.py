@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', IndexView.as_view(), name='index'),
     path('reviewzip/', include('reviewzip.urls')),
+    path('api/', include('api.urls')),
 ] 
 
 if settings.DEBUG:
