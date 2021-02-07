@@ -135,14 +135,13 @@ def match_sentence_with_keyword(reviewzip, sentences, verb_indices, keywords, po
     """ 키워드랑 문장 매치시켜 데이터베이스에 키워드 저장 """
 
     for keyword in keywords:
-        for idx, sent in enumerate(sentences):
-            # 키워드 가 이미 존재하면 가져오고 존재하지 않으면 만들음
-            keyword_obj, created = Keyword.objects.get_or_create(name=keyword)
-            # 키워드에 매칭되는 문장 추가
-            keyword_obj.sentence.add(Sentence.objects.get(content__exact=sent))
+        # 키워드를 무조건 새롭게 생성
+        keyword_obj = Keyword.objects.create(name=keyword)
 
+        for idx, sent in enumerate(sentences):
             # '어깨가'처럼 문장 내에서 찾을 수 있는 경우
             if keyword in sent:
+                keyword_obj.sentence.add(Sentence.objects.get(content__exact=sent))
                 if positive:
                     reviewzip.positive_keyword.add(keyword_obj)
                 else:
@@ -150,6 +149,7 @@ def match_sentence_with_keyword(reviewzip, sentences, verb_indices, keywords, po
             # 키워드가 동사, 형용사 원형이어서 원래 문장에서 찾을 수 없는 경우
             try:
                 if idx in verb_indices[keyword]:
+                    keyword_obj.sentence.add(Sentence.objects.get(content__exact=sent))
                     if positive:
                         reviewzip.positive_keyword.add(keyword_obj)
                     else:
@@ -166,7 +166,7 @@ def make_reviewzip():
     """ 아직 처리되지 않은 ReviewFile로 Review 클래스 데이터 생성 """
 
     # 먼저 만들어진 파일부터 처리
-    using_file = ReviewFile.objects.filter(used=False).order_by('-create_date')[0]
+    using_file = ReviewFile.objects.filter(used=False).order_by('create_date')[0]
     file_name = using_file.file
 
     # 임시방편
@@ -213,8 +213,6 @@ def make_reviewzip():
     print("sentece data bulk create")
     Sentence.objects.bulk_create(pos_sent_objs, ignore_conflicts=True)
     Sentence.objects.bulk_create(neg_sent_objs, ignore_conflicts=True)
-    reviewzip.positive_sentence.bulk_create(pos_sent_objs, ignore_conflicts=True)
-    reviewzip.negative_sentence.bulk_create(neg_sent_objs, ignore_conflicts=True)
 
     # 긍정 키워드, 부정 키워드 얻기
     print('getting keywords')
