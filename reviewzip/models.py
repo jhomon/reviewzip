@@ -2,25 +2,6 @@ from django.db import models
 
 # Create your models here.
 
-class Sentence(models.Model):
-    """ 리뷰 문장 단위 """
-
-    content = models.TextField(unique=True)
-
-    def __str__(self):
-        return self.content
-
-
-class Keyword(models.Model):
-    """ 리뷰 키워드 """
-    
-    name = models.CharField(max_length=10, unique=True)
-    sentence = models.ManyToManyField(Sentence)
-
-    def __str__(self):
-        return self.name
-
-
 class ReviewFile(models.Model):
     """ 리뷰 담겨있는 csv 파일 """
 
@@ -33,6 +14,26 @@ class ReviewFile(models.Model):
         return self.url
 
 
+class Sentence(models.Model):
+    """ 리뷰 문장 단위 """
+
+    content = models.TextField(unique=True)
+
+    def __str__(self):
+        return self.content
+
+
+class Keyword(models.Model):
+    """ 리뷰 키워드 """
+    
+    name = models.CharField(max_length=10)
+    sentence = models.ManyToManyField(Sentence)
+
+    def __str__(self):
+        return self.name
+
+
+
 class Review(models.Model):
     """ 리뷰 종합 분석 """
 
@@ -43,8 +44,6 @@ class Review(models.Model):
     watch = models.IntegerField(default=0) # 조회수
     positive_keyword = models.ManyToManyField(Keyword, blank=True, related_name="positive_keyword") # 긍정 키워드
     negative_keyword = models.ManyToManyField(Keyword, blank=True, related_name="negative_keyword") # 부정 키워드
-    positive_sentence = models.ManyToManyField(Sentence, blank=True, related_name="positive_sentence") # 긍정 문장
-    negative_sentence = models.ManyToManyField(Sentence, blank=True, related_name="negative_sentence") # 부정 문장
 
     def __str__(self):
         return self.name
