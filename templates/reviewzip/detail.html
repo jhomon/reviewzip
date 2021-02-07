@@ -46,12 +46,12 @@
     <!-- 키워드에 해당하는 리뷰 컨테이너 -->
     <div class="py-3 my-5 container border-top">
         <!-- 컨테이너 헤딩 -->
-        <h5 v-if="!selected_keyword" class="text-center">
+        <h4 v-if="!selected_keyword" class="text-center">
             키워드를 클릭하면 해당 키워드를 포함하는 리뷰를 보여줍니다
-        </h5>
-        <h5 v-else class="text-center">
+        </h4>
+        <h4 v-else class="text-center">
             "[[ selected_keyword ]]" 포함하는 리뷰 문장
-        </h5>
+        </h4>
 
         <!-- 로딩 spinner -->
         <div v-if="loading" class="position-fixed"
@@ -91,14 +91,28 @@
 </div>
 {% endblock %}
 
+{% block style %}
+<style>
+    .clicked {
+        background-color: rgb(158, 158, 158);
+    }
+    .clicked:hover, .clicked:focus {
+        background-color: rgb(85, 85, 85);
+    }
+</style>
+{% endblock %}
+
 {% block script %}
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-    $(".keyword").click(function() {
-        $(this).toggleClass("btn-secondary");
-        alert("clicked");
-    });
+    $(document).ready(function() {
+        $(".keyword").click(function() {
+            $(".keyword").removeClass("clicked");
+            $(this).toggleClass("clicked");
+        });
+    })
+    
 
     axios.defaults.xsrfCookieName = 'csrftoken';
     axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
@@ -116,6 +130,7 @@
         },
         methods: {
             prepare_fetch: function(event) {
+                /* 키워드에 해당하는 리뷰를 fetch하기 위한 data 설정 */
                 this.selected_keyword = event.target.textContent
                 this.review_name = document.getElementById("review_name").textContent
                 if (event.target.className.includes('positive')) {
@@ -127,6 +142,7 @@
                 app.fetch_sentences_with_keyword()
             },
             fetch_sentences_with_keyword: function() {
+                /* 키워드에 해당하는 리뷰를 fetch */
                 axios.get('/api/get/review/sentences', {
                     params: {
                         keyword: app.selected_keyword,
@@ -146,6 +162,7 @@
                 })
             },
             fetch_prev: function() {
+                /* "이전" 페이지에 해당하는 데이터 fetch */
                 app.loading = true
                 axios.get(app.sentences.previous)
                 .then(function(response) {
@@ -163,6 +180,7 @@
                 })
             },
             fetch_next: function() {
+                /* "다음" 페이지에 해당하는 데이터 fetch*/
                 app.loading = true
                 axios.get(app.sentences.next)
                 .then(function(response) {
