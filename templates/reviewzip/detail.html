@@ -4,7 +4,7 @@
 <!-- 제품 기본 정보 -->
 <div class="mb-5 d-flex flex-column align-items-center">
     <h3 id="review_name" class="mb-3">{{ object.name }}</h3>
-    <img class="mb-3" style="display: block;" src={{ object.thumbnail.url }} alt="{{ object.name }} 이미지">
+    <img class="mb-3 img-thumbnail" style="display: block;" src={{ object.thumbnail.url }} alt="{{ object.name }} 이미지">
     <a href="{{ object.url }}"><button class="btn btn-outline-info">구매하기</button></a>
 </div>
 
@@ -65,7 +65,7 @@
         <!-- 클릭한 키워드를 포함하는 리뷰 -->
         <div v-if="selected_keyword" id="sentence_container" class="container my-3">
             <div v-if="errored">오류가 있어 데이터를 가져오지 못 했습니다</div>
-            <div v-if="sentences" v-for="sentence in sentences.results">
+            <div v-for="sentence in sentences.results">
                 <div class="py-3 border-bottom">[[ sentence.content ]]</div>
             </div>
         </div>
