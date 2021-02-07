@@ -158,6 +158,7 @@
                     app.errored = true
                 })
                 .finally(function() {
+                    app.focus_to_review()
                     app.loading = false
                 })
             },
@@ -172,10 +173,7 @@
                     app.errored = true
                 })
                 .finally(function() {
-                    var sentence_container = document.querySelector('#sentence_container')
-                    var navbar = document.querySelector('.navbar')
-                    var top_pos = sentence_container.getBoundingClientRect().top - navbar.getBoundingClientRect().bottom + window.scrollY
-                    window.scrollTo({top: top_pos, behavior: 'smooth'})
+                    app.focus_to_review()
                     app.loading = false
                 })
             },
@@ -190,12 +188,15 @@
                     app.errored = true
                 })
                 .finally(function() {
-                    var sentence_container = document.querySelector('#sentence_container')
-                    var navbar = document.querySelector('.navbar')
-                    var top_pos = sentence_container.getBoundingClientRect().top - navbar.getBoundingClientRect().bottom + window.scrollY
-                    window.scrollTo({top: top_pos, behavior: 'smooth'})
+                    app.focus_to_review()
                     app.loading = false
                 })
+            },
+            focus_to_review: function() {
+                var sentence_container = document.querySelector('#sentence_container')
+                var navbar = document.querySelector('.navbar')
+                var top_pos = sentence_container.getBoundingClientRect().top - navbar.getBoundingClientRect().bottom + window.scrollY
+                window.scrollTo({top: top_pos, behavior: 'smooth'})
             }
         }
     });
