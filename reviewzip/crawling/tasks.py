@@ -6,7 +6,6 @@ import requests
 import re
 import lxml
 import csv
-import os
 import datetime, time
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -86,9 +85,6 @@ def crawling_start():
     # 크롤링이 끝나면 chrome 종료
     driver.quit()
 
-    # 만들어진 csv 파일 삭제
-    os.remove(url_id + '.csv')
-
     # pending_url processed 처리
     pending_url.processed = True
     pending_url.save()
@@ -160,7 +156,6 @@ def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
     review_info = ReviewInfo(url=crawling_url) # url 설정
     review_info.name = product_name # name 설정
     # file_path 설정
-    # 여기에서 에러 발생. File class는 codec cp949??? 확인해보니 UTF-8
     review_info.file_path = url_id + '.csv'
     
     # thumbnail 설정
@@ -242,7 +237,6 @@ def crawling_coupang(driver, crawling_url, regexp, f, wr, url_id):
     review_info = ReviewInfo(url=crawling_url) # url 설정
     review_info.name = product_name # name 설정
     # file_path 설정
-    # 여기에서 에러 발생. File class는 codec cp949??? 확인해보니 UTF-8 File() 함수에서 open() 호출 시 encoding이 문제
     review_info.file_path = url_id + '.csv'
     
     # thumbnail 설정
