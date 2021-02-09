@@ -145,7 +145,7 @@ def make_reviewzip():
     # 먼저 만들어진 ReviewInfo부터 처리
     try:
         using_info = ReviewInfo.objects.filter(used=False).order_by('create_date')[0]
-        file_path = using_info.file.path
+        file_path = 'review_files/' + using_info.file_path
     except:
         # 처리할 파일이 없는 경우
         print("모든 파일이 이미 처리되었습니다.")
@@ -156,7 +156,7 @@ def make_reviewzip():
 
     # 리뷰 데이터 읽어 pandas 객체 만들기
     print('reading csv file')
-    data = pd.read_csv(file_path, encoding='cp949', error_bad_lines=False, names=['review', 'rating'])
+    data = pd.read_csv(file_path, encoding='utf-8', names=['review', 'rating'])
     print(data.head())
     # 중복된 데이터 제거
     data.drop_duplicates(subset=['review'], inplace=True)

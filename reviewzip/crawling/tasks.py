@@ -67,7 +67,7 @@ def crawling_start():
 
     # csv 파일로 저장하는 게 깔끔
     # 한글이므로 utf-8 인코딩
-    f = open(url_id + '.csv', 'a+', encoding='utf-8', newline='')
+    f = open('review_files/' + url_id + '.csv', 'a+', encoding='utf-8', newline='')
     wr = csv.writer(f)
 
     # 크롤링 가능한 사이트인지 찾는 정규 표현식
@@ -159,9 +159,9 @@ def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
     # ReviewInfo 데이터 생성
     review_info = ReviewInfo(url=crawling_url) # url 설정
     review_info.name = product_name # name 설정
-    # file 설정
+    # file_path 설정
     # 여기에서 에러 발생. File class는 codec cp949??? 확인해보니 UTF-8
-    review_info.file.save(url_id + '.csv', File(f), save=False)
+    review_info.file_path = url_id + '.csv'
     
     # thumbnail 설정
     review_info.thumbnail.save(url_id + '.jpg', ContentFile(requests.get(image_link).content), save=False)
@@ -234,16 +234,16 @@ def crawling_coupang(driver, crawling_url, regexp, f, wr, url_id):
                 next.find_element_by_xpath('.//button[contains(@class, "js_reviewArticlePageNextBtn")]').click()
             else:
                 next.find_element_by_xpath(".//button[text()=" + str(page) + " and not(text()[2])]").click()
-        except Exception as e:
+        except:
             print('리뷰 마지막에 도착')
             break
 
     # ReviewInfo 데이터 생성
     review_info = ReviewInfo(url=crawling_url) # url 설정
     review_info.name = product_name # name 설정
-    # file 설정
-    # 여기에서 에러 발생. File class는 codec cp949??? 확인해보니 UTF-8
-    review_info.file.save(url_id + '.csv', File(f), save=False)
+    # file_path 설정
+    # 여기에서 에러 발생. File class는 codec cp949??? 확인해보니 UTF-8 File() 함수에서 open() 호출 시 encoding이 문제
+    review_info.file_path = url_id + '.csv'
     
     # thumbnail 설정
     review_info.thumbnail.save(url_id + '.jpg', ContentFile(requests.get(image_link).content), save=False)
