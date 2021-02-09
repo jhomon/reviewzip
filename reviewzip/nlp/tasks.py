@@ -157,7 +157,6 @@ def make_reviewzip():
     # 리뷰 데이터 읽어 pandas 객체 만들기
     print('reading csv file')
     data = pd.read_csv(file_path, encoding='utf-8', names=['review', 'rating'])
-    print(data.head())
     # 중복된 데이터 제거
     data.drop_duplicates(subset=['review'], inplace=True)
 
