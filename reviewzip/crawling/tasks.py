@@ -145,10 +145,11 @@ def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
     review_info = ReviewInfo(url=crawling_url) # url 설정
     review_info.name = product_name # name 설정
     # file 설정
-    review_info.file.save(url_id + '.csv', File(f))
+    # 여기에서 에러 발생. File class는 codec cp949??? 확인해보니 UTF-8
+    review_info.file.save(url_id + '.csv', File(f), save=False)
     
     # thumbnail 설정
-    review_info.thumbnail.save(url_id + '.jpg', ContentFile(requests.get(image_link).content))
+    review_info.thumbnail.save(url_id + '.jpg', ContentFile(requests.get(image_link).content), save=False)
 
     # ReviewInfo 데이터 저장
     review_info.save()

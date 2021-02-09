@@ -50,12 +50,12 @@ def get_stemmed_keywords(reviews):
     stop_words = ['입다', '사다', '하다', '시키다', '않다', '되다', '받다', '알다', '싶다', '파다', '있다', '살다', '비다', '듭니다', '이다', '떨다'\
         '진짜', '정말', '조금', '아주', '살짝', '생각', '그냥', '약간', '제가', '저랑', '매우',]
 
-    # reviews 내용이 하나 이하이면 None 리턴
+    # reviews 내용이 하나 이하이면 빈 리스트 리턴
     try:
         keyword_extractor = KRWordRank(min_count=5, max_length=10)
         keywords, rank, graph = keyword_extractor.extract(reviews, beta=0.85)
     except:
-        return None
+        return []
 
     keywords_stemmed = {}
     for word, score in keywords.items():
@@ -143,15 +143,20 @@ def make_reviewzip():
     """ 아직 처리되지 않은 ReviewInfo로 Review 클래스 데이터 생성 """
 
     # 먼저 만들어진 ReviewInfo부터 처리
-    using_info = ReviewInfo.objects.filter(used=False).order_by('create_date')[0]
-    file_path = using_info.file.path
+    try:
+        using_info = ReviewInfo.objects.filter(used=False).order_by('create_date')[0]
+        file_path = using_info.file.path
+    except:
+        # 처리할 파일이 없는 경우
+        print("모든 파일이 이미 처리되었습니다.")
+        return
 
     # Review 데이터 임시 생성
     reviewzip = Review.objects.create(info=using_info)
 
     # 리뷰 데이터 읽어 pandas 객체 만들기
     print('reading csv file')
-    data = pd.read_csv(file_path, encoding='cp949', names=['review', 'rating'])
+    data = pd.read_csv(file_path, encoding='cp949', error_bad_lines=False, names=['review', 'rating'])
     print(data.head())
     # 중복된 데이터 제거
     data.drop_duplicates(subset=['review'], inplace=True)
