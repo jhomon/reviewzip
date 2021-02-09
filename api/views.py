@@ -16,9 +16,9 @@ class SentenceViewSet(ReadOnlyModelViewSet):
         positive = self.request.GET.get('positive')
 
         if positive == 'positive':
-            review = Review.objects.prefetch_related('positive_keyword').get(name=review_name)
+            review = Review.objects.prefetch_related('positive_keyword').get(info__name=review_name)
             return review.positive_keyword.prefetch_related('sentence').get(name=keyword).sentence.all()
         elif positive == 'negative':
-            review = Review.objects.prefetch_related('negative_keyword').get(name=review_name)
+            review = Review.objects.prefetch_related('negative_keyword').get(info__name=review_name)
             return review.negative_keyword.prefetch_related('sentence').get(name=keyword).sentence.all()
 

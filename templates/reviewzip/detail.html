@@ -3,9 +3,9 @@
 {% block content %}
 <!-- 제품 기본 정보 -->
 <div class="mb-5 d-flex flex-column align-items-center">
-    <h3 id="review_name" class="mb-3">{{ object.name }}</h3>
-    <img class="mb-3 img-thumbnail" style="display: block;" src={{ object.thumbnail.url }} alt="{{ object.name }} 이미지">
-    <a href="{{ object.url }}"><button class="btn btn-outline-info">구매하기</button></a>
+    <h3 id="review_name" class="mb-3">{{ object.info.name }}</h3>
+    <img class="mb-3 img-thumbnail" style="display: block;" src={{ object.info.thumbnail.url }} alt="{{ object.info.name }} 이미지">
+    <a href="{{ object.info.url }}"><button class="btn btn-outline-info">구매하기</button></a>
 </div>
 
 <!-- vue 앱 -->

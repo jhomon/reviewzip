@@ -8,10 +8,10 @@
     {% for review in page_obj %}
     <a class="card shadow-sm mb-5 text-decoration-none text-reset flex-grow-0"  style="flex-basis: 30%"
     href="{% url 'reviewzip:detail' review.id %}">
-        <img src={{ review.thumbnail.url }} class="card-img-top" style="height:70%;">
+        <img src={{ review.info.thumbnail.url }} class="card-img-top" style="height:70%;">
         <div class="card-body">
             <p class="card-title">
-                {{ review.name }}
+                {{ review.info.name }}
             </p>
         </div>
     </a>
@@ -58,6 +58,7 @@
 <!-- 검색 결과가 없을 때 -->
 {% else %}
 <div class="m-5 d-flex flex-column align-items-center">
+    <!-- 오류 메시지 -->
     {% if messages %}
         {% for message in messages %}
         <div class="px-5 py-3 mb-5 bg-{{message.tags}} text-white rounded-pill">

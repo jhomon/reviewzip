@@ -8,10 +8,10 @@
     <div class="card-deck mb-5">
         {% for recent_reviewzip in recent_reviewzips %}
         <a class="card shadow mb-5 text-reset text-decoration-none" href="{% url 'reviewzip:detail' recent_reviewzip.id %}">
-            <img src={{ recent_reviewzip.thumbnail.url }} class="card-img-top" style="height:70%;">
+            <img src={{ recent_reviewzip.info.thumbnail.url }} class="card-img-top" style="height:70%;">
             <div class="card-body">
                 <h5 class="card-title text-truncate">
-                    {{ recent_reviewzip.name }}
+                    {{ recent_reviewzip.info.name }}
                 </h5>
             </div>
         </a>
@@ -25,10 +25,10 @@
     <div class="card-deck mb-5">
         {% for popular_reviewzip in popular_reviewzips %}
         <a class="card shadow mb-5 text-reset text-decoration-none" href="{% url 'reviewzip:detail' popular_reviewzip.id %}">
-            <img src={{ popular_reviewzip.thumbnail.url }} class="card-img-top" style="height:70%;">
+            <img src={{ popular_reviewzip.info.thumbnail.url }} class="card-img-top" style="height:70%;">
             <div class="card-body">
                 <h5 class="card-title text-truncate">
-                    {{ popular_reviewzip.name }}
+                    {{ popular_reviewzip.info.name }}
                 </h5>
             </div>
         </a>
