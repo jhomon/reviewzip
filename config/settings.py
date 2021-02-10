@@ -151,5 +151,8 @@ REST_FRAMEWORK = {
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# celery broker rabbitmq
+# celery configuration
+CELERY_TIMEZONE = "Asia/Seoul"
 CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL')
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 3
