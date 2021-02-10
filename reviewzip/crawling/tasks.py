@@ -70,6 +70,9 @@ def crawling_start():
 
     # csv 파일로 저장하는 게 깔끔
     # 한글이므로 utf-8 인코딩
+    if not os.path.exists('review_files'):
+        os.makedirs('review_files')
+
     f = open('review_files/' + url_id + '.csv', 'a+', encoding='utf-8', newline='')
     wr = csv.writer(f)
 
