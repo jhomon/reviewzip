@@ -34,7 +34,7 @@ h5py==2.10.0
 idna==2.10
 isort==5.7.0
 joblib==1.0.0
-JPype1==1.2.1
+JPype1==1.2.0
 Keras-Preprocessing==1.1.2
 kombu==5.0.2
 konlpy==0.5.2
