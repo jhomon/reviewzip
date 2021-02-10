@@ -152,4 +152,4 @@ REST_FRAMEWORK = {
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # celery broker rabbitmq
-CELERY_BROKER_URL = os.environ.get('cloudamqp_url')
+CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL')
