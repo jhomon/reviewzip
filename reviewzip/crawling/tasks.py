@@ -6,6 +6,7 @@ import requests
 import re
 import lxml
 import csv
+import os
 import datetime, time
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -43,10 +44,12 @@ def crawling_start():
     """ 크롤링 base 함수 크롤링 후 ReviewFIle 생성 """
     
     # driver 설정 - css, 이미지는 로드하지 않는다
-    options = Options()
-    options.page_load_strategy = 'eager'
+    chrome_options = Options()
+    chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--no-sandbox')
     
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH', "chromedriver"), chrome_options=chrome_options)
     # driver 전체 화면
     driver.maximize_window()
 
