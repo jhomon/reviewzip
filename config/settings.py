@@ -44,8 +44,7 @@ INSTALLED_APPS = [
     'reviewzip.apps.ReviewzipConfig',
     'api.apps.ApiConfig',
     'rest_framework',
-    # 용량 문제로 제거
-    #'django_celery_beat',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
