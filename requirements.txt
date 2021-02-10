@@ -70,6 +70,7 @@ six==1.15.0
 sqlparse==0.4.1
 tensorboard==2.4.1
 tensorboard-plugin-wit==1.8.0
+wheel==0.35
 tensorflow==2.4.1
 tensorflow-estimator==2.4.0
 termcolor==1.1.0
