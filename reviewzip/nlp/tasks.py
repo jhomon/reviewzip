@@ -45,6 +45,7 @@ def get_stemmed_sentences(reviews):
     # 너무 이상하게 쪼개면 customized konlpy 사용
     okt = Okt()
 
+    # 추출할 품사: 명사, 형용사
     okt_extracting_pos = ['Noun', 'Adjective']
 
     # okt를 이용하여 단어 정제
@@ -55,6 +56,7 @@ def get_stemmed_sentences(reviews):
     # reviews 내용이 없으면 빈 리스트 리턴
     sent_tokenized = []
 
+    # 토큰화된 문장 리스트 생성
     for review in reviews:
         temp = []
         for word, pos in okt.pos(review, norm=True, stem=True):
