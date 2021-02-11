@@ -46,7 +46,8 @@ def crawling_start():
     # driver 설정 - css, 이미지는 로드하지 않는다
     chrome_options = Options()
     chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
-    #chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument('window-size=1920x1080')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     
@@ -93,7 +94,7 @@ def crawling_start():
     # pending_url processed 처리
     pending_url.processed = True
     pending_url.save()
-
+    
 
 def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
     """ crawling_url을 주소로 무신사에 젒속해서 크롤링 후 ReviewFile 데이터 생성 """
