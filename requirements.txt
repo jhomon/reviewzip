@@ -37,7 +37,6 @@ JPype1==1.2.0
 Keras-Preprocessing==1.1.2
 kombu==5.0.2
 konlpy==0.5.2
-krwordrank==1.0.3
 kss==2.4.0.1
 lazy-object-proxy==1.4.3
 lxml==4.6.2
@@ -65,8 +64,11 @@ rsa==4.7
 selenium==3.141.0
 six==1.15.0
 sqlparse==0.4.1
+tensorboard==2.4.1
+tensorboard-plugin-wit==1.8.0
 wheel==0.35
 tensorflow-cpu==2.4.1
+tensorflow-estimator==2.4.0
 termcolor==1.1.0
 threadpoolctl==2.1.0
 toml==0.10.2
