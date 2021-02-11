@@ -6,3 +6,5 @@ __pycache__
 thumbnails
 review_files
 chromedriver.exe
+*.csv
+*.jpg
