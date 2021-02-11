@@ -5,11 +5,11 @@ import kss
 import pickle
 import jpype
 import pandas as pd
+import numpy as np
 import os
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
-from krwordrank.word import KRWordRank
 
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
@@ -29,111 +29,73 @@ def sentiment_predict(new_sentence, model, tokenizer):
     encoded = tokenizer.texts_to_sequences([new_sentence]) # 정수 인코딩
     pad_new = pad_sequences(encoded, maxlen = max_len) # 패딩
     score = float(model.predict(pad_new)) # 예측
-    if(score > 0.5):
+    if score > 0.5:
         return 1
     else:
         return 0
 
 
-def get_stemmed_keywords(reviews):
-    """ 형용사, 동사는 원형으로 변환한 reviews의 키워드를 반환 """
 
-    #JAVA_HOME = "C:\Program Files\Java\jdk-15.0.1\bin\server"
-    
+def get_stemmed_sentences(reviews):
+    """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
+
     if jpype.isJVMStarted():  
         jpype.attachThreadToJVM()
 
     # 너무 이상하게 쪼개면 customized konlpy 사용
     okt = Okt()
 
+    okt_extracting_pos = ['Noun', 'Adjective']
+
     # okt를 이용하여 단어 정제
     stop_words = ['입다', '사다', '하다', '시키다', '않다', '되다', '받다', '알다', '싶다', '파다', '있다', '살다', '비다', '듭니다', '이다', '떨다'\
-        '진짜', '정말', '조금', '아주', '살짝', '생각', '그냥', '약간', '제가', '저랑', '매우',]
+        '진짜', '정말', '조금', '아주', '살짝', '생각', '그냥', '약간', '제가', '저랑', '매우', '제품',
+        '것', '수', '요', '더', '거', '시', '쪽', '봉']
 
-    # reviews 내용이 하나 이하이면 빈 리스트 리턴
-    try:
-        keyword_extractor = KRWordRank(min_count=5, max_length=10)
-        keywords, rank, graph = keyword_extractor.extract(reviews, beta=0.85)
-    except:
-        return []
+    # reviews 내용이 없으면 빈 리스트 리턴
+    sent_tokenized = []
 
-    keywords_stemmed = {}
-    for word, score in keywords.items():
-        word_pos = okt.pos(word, stem=True)
+    for review in reviews:
+        temp = []
+        for word, pos in okt.pos(review, norm=True, stem=True):
+            if pos in okt_extracting_pos and word not in stop_words:
+                # 품사가 명사, 형용사이고 stop_words가 아니면 
+                temp.append(word)
+        sent_tokenized.append(temp)
 
-        # 불용어로만 이루어진 corpus이면 건너뜁니다
-        if len(word_pos) == 1 and word_pos[0][0] in stop_words:
-            continue
-
-        # 형용사, 동사면 기본형을 keyword_set에 추가 
-        if len(word_pos) == 1 and word_pos[0][1] in ['Adjective', 'Verb']:
-            if word_pos[0][0] not in keywords_stemmed:
-                keywords_stemmed[word_pos[0][0]] = score
-            else:
-                keywords_stemmed[word_pos[0][0]] += score
-        # 부사, 조사, 이모티콘으로만 이루어진 형태소는 버립니다
-        elif len(word_pos) == 1 and word_pos[0][1] in ['Adverb', 'Josa', 'KoreanParticle']:
-            pass
-        # 명사 두 개로 쪼갰으면 원래 단어를 keyword_set에 추가
-        else:
-            keywords_stemmed[word] = score
-
-    # 동사의 활용 형태가 하나의 키워드로 통합되면서 score가 바뀌었으니 다시 sort
-    # sorted는 (키, 값) 배열을 반환
-    # 20개의 키워드를 가지는 리스트 리턴
-    keywords_stemmed = list(map(lambda x: x[0], sorted(keywords_stemmed.items(), key=lambda x:x[1], reverse=True)[:20]))
-    return keywords_stemmed
-
-
-def get_verb_indices(reviews):
-    """ [동사 또는 형용사]를 포함하는 인덱스들을 값으로 가지는 딕셔너리 반환 """
-
-    if jpype.isJVMStarted():  
-        jpype.attachThreadToJVM()
-
-    okt = Okt()
-
-    verb_indices = {}
-    stop_words = ['입다', '사다', '하다', '시키다', '않다', '되다', '받다', '알다', '싶다', '파다', '있다', '살다', '비다', '듭니다', '이다', '떨다'\
-    '진짜', '정말', '조금', '아주', '살짝', '생각', '그냥', '약간', '제가', '저랑', '매우',]
-
-    for idx, sent in enumerate(reviews):
-        for word, pos in okt.pos(sent, stem=True):
-            if pos in ['Adjective', 'Verb'] and word not in stop_words:
-                try:
-                    verb_indices[word].append(idx)
-                except KeyError:
-                    verb_indices[word] = []
-        return verb_indices
+    return sent_tokenized
 
 
 
-def match_sentence_with_keyword(reviewzip, sentences, verb_indices, keywords, positive=True):
+def match_sentence_with_keyword(reviewzip, sentences, sent_tokenized, positive=True):
     """ 키워드랑 문장 매치시켜 데이터베이스에 키워드 저장 """
 
-    for keyword in keywords:
+    # 20개의 빈도수 상위 키워드
+    tokenizer = Tokenizer(num_words=20+1)
+    tokenizer.fit_on_texts(sent_tokenized)
+
+    # (word, index)
+    top_keywords = list(tokenizer.word_index.items())[:20]
+
+    # 해당 토큰(키워드)가 존재하면 1, 없으면 0을 값으로 가지는 numpy matrix
+    token_existance_mat = tokenizer.texts_to_matrix(sent_tokenized, mode='binary')
+
+    for keyword, index in top_keywords:
         # 키워드를 무조건 새롭게 생성
         keyword_obj = Keyword.objects.create(name=keyword)
 
-        for idx, sent in enumerate(sentences):
-            # '어깨가'처럼 문장 내에서 찾을 수 있는 경우
-            if keyword in sent:
-                keyword_obj.sentence.add(Sentence.objects.get(content__exact=sent))
-                if positive:
-                    reviewzip.positive_keyword.add(keyword_obj)
-                else:
-                    reviewzip.negative_keyword.add(keyword_obj)
-            # 키워드가 동사, 형용사 원형이어서 원래 문장에서 찾을 수 없는 경우
-            try:
-                if idx in verb_indices[keyword]:
-                    keyword_obj.sentence.add(Sentence.objects.get(content__exact=sent))
-                    if positive:
-                        reviewzip.positive_keyword.add(keyword_obj)
-                    else:
-                        reviewzip.negative_keyword.add(keyword_obj)
-            except KeyError:
-                pass
-    
+        # 열 인덱스가 일치하는(해당 키워드가 있는) 문장
+        rows = np.where(token_existance_mat[:, index] == 1)[0]
+        rows = rows.tolist()
+
+        # 키워드가 존재하는 행들 rows에 있는 완전한 문장 sentences를 키워드랑 매칭시켜 저장
+        for row in rows:
+            keyword_obj.sentence.add(Sentence.objects.get(content__exact=sentences[row]))
+            if positive:
+                reviewzip.positive_keyword.add(keyword_obj)
+            else:
+                reviewzip.negative_keyword.add(keyword_obj)
+
     return reviewzip
 
 
@@ -180,7 +142,6 @@ def make_reviewzip():
         sents = kss.split_sentences(review)
         # 각 문장에 대해 감성 분류
         for sent in sents:
-            #Sentence.objects.create(content=sent)
             sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
             if sentiment == 1:
                 pos_sent_objs.append(Sentence(content=sent)) # 긍정 문장
@@ -191,24 +152,20 @@ def make_reviewzip():
 
 
     # 긍정 문장, 부정 문장 bulk create
+    # 기존에 데이터베이스에 존재하는 문장은 무시
     print("sentece data bulk create")
     Sentence.objects.bulk_create(pos_sent_objs, ignore_conflicts=True)
     Sentence.objects.bulk_create(neg_sent_objs, ignore_conflicts=True)
 
-    # 긍정 키워드, 부정 키워드 얻기
-    print('getting keywords')
-    pos_keywords = get_stemmed_keywords(pos_sents)
-    neg_keywords = get_stemmed_keywords(neg_sents)
-    
-    # 동사 원형 키워드를 키로, 해당 키워드를 포함하는 문장의 인덱스들을 값으로 가지는 딕셔너리 
-    print('getting review indices with verb in reviews')
-    pos_verb_indices = get_verb_indices(pos_sents)
-    neg_verb_indices = get_verb_indices(neg_sents)
+    # 명사, 형용사만 가지는 tokenized sentence 
+    print('getting tokenized sentences')
+    pos_sent_tokenized = get_stemmed_sentences(pos_sents)
+    neg_sent_tokenized = get_stemmed_sentences(neg_sents)
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')
-    reviewzip = match_sentence_with_keyword(reviewzip, pos_sents, pos_verb_indices, pos_keywords, positive=True)
-    reviewzip = match_sentence_with_keyword(reviewzip, neg_sents, neg_verb_indices, neg_keywords, positive=False)
+    reviewzip = match_sentence_with_keyword(reviewzip, pos_sents, pos_sent_tokenized, positive=True)
+    reviewzip = match_sentence_with_keyword(reviewzip, neg_sents, neg_sent_tokenized, positive=False)
     
     # reviewzip object 데이터베이스에 저장
     reviewzip.save()
