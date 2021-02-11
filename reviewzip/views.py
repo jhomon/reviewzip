@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.contrib import messages
 from .models import Review, PendingUrl, ReviewInfo
 from .crawling.tasks import pend_product_url
+from .common.tasks import increase_watch
 
 # Create your views here.
 class IndexView(TemplateView):
@@ -16,9 +17,9 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # 최근 올라온 리뷰집 5개 
-        context['recent_reviewzips'] = Review.objects.order_by('-create_date')[:5]
+        context['recent_reviewzips'] = Review.objects.only("info").order_by('-create_date')[:5].prefetch_related('info')
         # 조회수 높은 리뷰집 5개
-        context['popular_reviewzips'] = Review.objects.order_by('-watch')[:5]
+        context['popular_reviewzips'] = Review.objects.only("info").order_by('-watch')[:5].prefetch_related('info')
         return context
 
 
@@ -28,15 +29,16 @@ class ReviewDetailView(DetailView):
 
     model = Review
     template_name = "reviewzip/detail.html"
+    queryset = Review.objects.only('info').prefetch_related('info', 'positive_keyword', 'negative_keyword')
 
     def get_object(self):
         review = super().get_object()
         # 조회수 1 증가
-        review.watch += 1
-        review.save()
+        increase_watch.delay(review.id)
         return review
 
-    
+
+
 
 class ReviewListView(ListView):
     """ 리뷰집 검색 결과 리스트 """
