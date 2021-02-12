@@ -5,6 +5,13 @@ ALLOWED_HOSTS = [
     'reviewzip.herokuapp.com'
 ]
 
+
+INSTALLED_APPS.extend( [
+    'cloudinary_storage',
+    'cloudinary',
+] )
+
+
 MIDDLEWARE.extend( [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ] )
