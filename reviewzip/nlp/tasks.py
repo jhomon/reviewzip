@@ -108,7 +108,8 @@ def make_reviewzip():
 
     # 먼저 만들어진 ReviewInfo부터 처리
     try:
-        using_info = ReviewInfo.objects.filter(used=False).order_by('create_date')[0]
+        using_info = ReviewInfo.objects.filter(used=False)\
+            .order_by('create_date').only('file_path', 'used')[0]
         file_path = 'review_files/' + using_info.file_path
     except:
         # 처리할 파일이 없는 경우
