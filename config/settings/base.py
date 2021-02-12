@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,23 +26,16 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'hello')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DJANGO_DEBUG', True))
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'reviewzip.herokuapp.com'
-]
-
+ALLOWED_HOSTS = []
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
-    'cloudinary',
     'reviewzip.apps.ReviewzipConfig',
     'api.apps.ApiConfig',
     'rest_framework',
@@ -51,7 +44,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -90,11 +82,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# Heroku: Update database configuration from $DATABASE_URL.
-import dj_database_url
-db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -149,25 +136,5 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-# Simplified static file serving.
-# https://warehouse.python.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 # celery configuration
 CELERY_TIMEZONE = "Asia/Seoul"
-CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL')
-CELERY_BROKER_POOL_LIMIT = 1
-CELERY_BROKER_HEARTBEAT = None
-CELERY_RESULT_BACKEND = None
-CELERY_WORKER_PREFETCH_MULTIPLIER = 1
-CELERY_BROKER_CONNECTION_MAX_RETRIES = 3
-CELERY_WORKER_CONCURRENCY = 50
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
-
-# cloudinary for image upload
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'drizk0ypa',
-    'API_KEY': '817352748312736',
-    'API_SECRET': 'zd_D9Np2pXFMNgYIh_pX7jvb_m0',
-}
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
