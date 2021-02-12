@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
     'reviewzip.apps.ReviewzipConfig',
     'api.apps.ApiConfig',
     'rest_framework',
@@ -161,3 +163,11 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_BROKER_CONNECTION_MAX_RETRIES = 3
 CELERY_WORKER_CONCURRENCY = 50
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
+
+# cloudinary for image upload
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'drizk0ypa',
+    'API_KEY': '817352748312736',
+    'API_SECRET': 'zd_D9Np2pXFMNgYIh_pX7jvb_m0',
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
