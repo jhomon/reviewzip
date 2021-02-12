@@ -1,6 +1,6 @@
 from celery import shared_task
 from reviewzip.models import Review, Sentence, Keyword, ReviewInfo
-from konlpy.tag import Mecab, Okt
+from konlpy.tag import Mecab
 import kss
 import pickle
 import jpype
@@ -22,9 +22,9 @@ def sentiment_predict(new_sentence, model, tokenizer):
     if jpype.isJVMStarted():  
         jpype.attachThreadToJVM()
 
-    okt = Okt()
+    mecab = Mecab()
     
-    new_sentence = okt.morphs(new_sentence) # 토큰화
+    new_sentence = mecab.morphs(new_sentence) # 토큰화
     new_sentence = [word for word in new_sentence if not word in stopwords] # 불용어 제거
     encoded = tokenizer.texts_to_sequences([new_sentence]) # 정수 인코딩
     pad_new = pad_sequences(encoded, maxlen = max_len) # 패딩
@@ -43,12 +43,13 @@ def get_stemmed_sentences(reviews):
         jpype.attachThreadToJVM()
 
     # 너무 이상하게 쪼개면 customized konlpy 사용
-    okt = Okt()
+    mecab = Mecab()
 
     # 추출할 품사: 명사, 형용사
-    okt_extracting_pos = ['Noun', 'Adjective']
+    #okt_extracting_pos = ['Noun', 'Adjective']
+    mecab_extracting_pos = ['NNG', 'NNP', 'VA']
 
-    # okt를 이용하여 단어 정제
+    # 단어 정제
     stop_words = ['입다', '사다', '하다', '시키다', '않다', '되다', '받다', '알다', '싶다', '파다', '있다', '살다', '비다', '듭니다', '이다', '떨다'\
         '진짜', '정말', '조금', '아주', '살짝', '생각', '그냥', '약간', '제가', '저랑', '매우', '제품',
         '것', '수', '요', '더', '거', '시', '쪽', '봉']
@@ -59,8 +60,8 @@ def get_stemmed_sentences(reviews):
     # 토큰화된 문장 리스트 생성
     for review in reviews:
         temp = []
-        for word, pos in okt.pos(review, norm=True, stem=True):
-            if pos in okt_extracting_pos and word not in stop_words:
+        for word, pos in mecab.pos(review, flatten=True):
+            if pos in mecab_extracting_pos and word not in stop_words:
                 # 품사가 명사, 형용사이고 stop_words가 아니면 
                 temp.append(word)
         sent_tokenized.append(temp)
