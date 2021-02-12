@@ -82,5 +82,5 @@ whitenoise==5.2.0
 wrapt==1.12.1
 zope.event==4.5.0
 zope.interface==5.2.0
-cloudinary==1.17.0
-django-cloudinary-storage==0.2.3
+cloudinary==1.24.0
+django-cloudinary-storage==0.3.0
