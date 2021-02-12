@@ -29,7 +29,7 @@ class ReviewDetailView(DetailView):
 
     model = Review
     template_name = "reviewzip/detail.html"
-    queryset = Review.objects.only('info').prefetch_related('info', 'positive_keyword', 'negative_keyword')
+    queryset = Review.objects.only('info', 'positive_keyword', 'negative_keyword')
 
     def get_object(self):
         review = super().get_object()
