@@ -153,6 +153,7 @@
                 })
                 .then(function(response) {
                     app.sentences = response.data
+                    app.errored = false
                 })
                 .catch(function(error) {
                     console.log(error)
@@ -169,6 +170,7 @@
                 axios.get(app.sentences.previous)
                 .then(function(response) {
                     app.sentences = response.data
+                    app.errored = false
                 })
                 .catch(function(error) {
                     app.errored = true
@@ -184,6 +186,7 @@
                 axios.get(app.sentences.next)
                 .then(function(response) {
                     app.sentences = response.data
+                    app.errored = false
                 })
                 .catch(function(error) {
                     app.errored = true
