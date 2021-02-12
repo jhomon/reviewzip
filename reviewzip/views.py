@@ -68,13 +68,13 @@ def add_request(request):
         else:
             try:
                 # 해당 url의 리뷰가 이미 등록되어 있으면
-                ReviewInfo.get(url=product_url)
+                ReviewInfo.objects.only('url').get(url=product_url)
                 messages.warning(request, '해당 url은 이미 등록되어 있습니다. 해당 url을 검색해보세요.')
             except:
                 # 해당 url의 리뷰가 등록되어 있지 않으면
                 try:
                     # 해당 url이 등록 대기 중이면
-                    PendingUrl.objects.get(url=product_url)
+                    PendingUrl.objects.only('url').get(url=product_url)
                     messages.warning(request, '해당 url은 등록 요청이 되어 검토 중입니다.')
                 except:
                     # 해당 url 리뷰도 존재하지 않고 등록 대기 중도 아니면
