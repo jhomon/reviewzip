@@ -56,6 +56,7 @@ def crawling_start():
     if not site_reg.search(crawling_url):
         return
 
+    """ 크롤링 가능한 경우 아래 실행 """
 
     # driver 설정 - css, 이미지는 로드하지 않는다
     chrome_options = Options()
@@ -72,8 +73,6 @@ def crawling_start():
 
     # 별점 크롤링을 위해 re 미리 compile
     regexp = re.compile('\d+')
-
-    
 
     # selenium은 클릭 하는 역할이고, 텍스트 크롤링은 bs4로 한다
     # selenium은 selnium 태그를 반환하고, bs4는 실제 태그를 반환한다
@@ -101,6 +100,10 @@ def crawling_start():
     # pending_url processed 처리
     pending_url.processed = True
     pending_url.save()
+    
+    # make_reveiwzip 함수 큐에 넣기
+    make_reviewzip.delay()
+
     
 
 def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
@@ -177,8 +180,6 @@ def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
     # ReviewInfo 데이터 저장
     review_info.save()
 
-    # make_reveiwzip 함수 큐에 넣기
-    make_reviewzip.delay()
 
 
 
@@ -257,6 +258,3 @@ def crawling_coupang(driver, crawling_url, regexp, f, wr, url_id):
 
     # ReviewInfo 데이터 저장
     review_info.save()
-
-    # make_reveiwzip 함수 큐에 넣기
-    make_reviewzip.delay()
