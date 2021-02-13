@@ -138,3 +138,6 @@ REST_FRAMEWORK = {
 
 # celery configuration
 CELERY_TIMEZONE = "Asia/Seoul"
+
+# file path field
+FILE_PATH_FIELD_DIRECTORY = os.path.join(BASE_DIR, 'review_files')
