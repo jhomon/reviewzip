@@ -125,7 +125,7 @@ def make_reviewzip():
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/okt_sentiment_model.h5')
+    model = load_model('./models/okt_sentiment_model.h5', compile=False)
     # 토크나이저 불러오기
     with open('./tokenizers/okt_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)

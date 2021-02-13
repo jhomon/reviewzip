@@ -43,6 +43,20 @@ def scroll_down(driver, whileSeconds, by):
 def crawling_start():
     """ 크롤링 base 함수 크롤링 후 ReviewFIle 생성 """
     
+    # 크롤링할 url 
+    # 가장 먼저 등록된 url
+    pending_url = PendingUrl.objects.filter(processed=False).order_by('create_date')[0]
+    # 저장할 csv 파일 이름
+    url_id = str(pending_url.id)
+    crawling_url = pending_url.url
+
+    # 크롤링 가능한 사이트인지 찾는 정규 표현식
+    site_reg = re.compile('musinsa|coupang')
+    # 크롤링 가능한 url이 아니면 종료
+    if not site_reg.search(crawling_url):
+        return
+
+
     # driver 설정 - css, 이미지는 로드하지 않는다
     chrome_options = Options()
     chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
@@ -59,15 +73,10 @@ def crawling_start():
     # 별점 크롤링을 위해 re 미리 compile
     regexp = re.compile('\d+')
 
-    # 크롤링할 url 
-    # 가장 먼저 등록된 url
-    pending_url = PendingUrl.objects.filter(processed=False).order_by('create_date')[0]
-    # 저장할 csv 파일 이름
-    url_id = str(pending_url.id)
+    
 
     # selenium은 클릭 하는 역할이고, 텍스트 크롤링은 bs4로 한다
     # selenium은 selnium 태그를 반환하고, bs4는 실제 태그를 반환한다
-    crawling_url = pending_url.url
     driver.get(crawling_url)
 
     # csv 파일로 저장하는 게 깔끔
@@ -76,15 +85,12 @@ def crawling_start():
     f = open('review_files/' + url_id + '.csv', 'a+', encoding='utf-8', newline='')
     wr = csv.writer(f)
 
-    # 크롤링 가능한 사이트인지 찾는 정규 표현식
-    site_reg = re.compile('musinsa|coupang')
-    # 크롤링 가능한 url이면
-    if site_reg.search(crawling_url):
-        # 무신사 url이면
-        if 'musinsa' in crawling_url:
-            crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id)
-        elif 'coupang' in crawling_url:
-            crawling_coupang(driver, crawling_url, regexp, f, wr, url_id)
+    
+    # 무신사 url이면
+    if 'musinsa' in crawling_url:
+        crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id)
+    elif 'coupang' in crawling_url:
+        crawling_coupang(driver, crawling_url, regexp, f, wr, url_id)
 
     # csv 파일 닫기
     f.close()
