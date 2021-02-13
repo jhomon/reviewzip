@@ -1,3 +1,4 @@
+from django.db.utils import IntegrityError
 from celery import shared_task
 from reviewzip.models import Review, Sentence, Keyword, ReviewInfo
 from konlpy.tag import Okt, Kkma
@@ -13,19 +14,6 @@ from tensorflow.keras.models import load_model
 
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
-
-def read_csv_file(file_path):
-    """ csv_file 읽고 reviews 반환 """
-    # 리뷰 데이터 읽어 pandas 객체 만들기
-    print('reading csv file')
-    data = pd.read_csv(file_path, encoding='utf-8', names=['review', 'rating'])
-    # 중복된 데이터 제거
-    data.drop_duplicates(subset=['review'], inplace=True)
-
-    # review만 추출
-    reviews = data.review.values
-    return reviews
-
 
 def sentiment_predict(new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
@@ -49,7 +37,7 @@ def sentiment_predict(new_sentence, model, tokenizer):
 
 
 
-def get_stemmed_sentences(sentences):
+def get_tokenized_sentences(sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     if jpype.isJVMStarted():  
@@ -67,13 +55,19 @@ def get_stemmed_sentences(sentences):
     # 토큰화된 문장 리스트 생성
     for sentence in sentences:
         temp = []
-        for word, pos in kkma.pos(sentence, flatten=True):
-            if pos in kkma_extracting_pos:
-                # 형용사는 끝에 '다'를 붙임
-                if pos in ['VA']:
-                    word += '다'
-                # 품사 기준 추출할 단어이면 
-                temp.append(word)
+        # 이모티콘이 섞여 있으면 UnicodeDecodeError 발생
+        try:
+            for word, pos in kkma.pos(sentence, flatten=True):
+                if pos in kkma_extracting_pos:
+                    # 형용사는 끝에 '다'를 붙임
+                    if pos in ['VA']:
+                        word += '다'
+                    # 품사 기준 추출할 단어이면 
+                    temp.append(word)
+        except UnicodeDecodeError:
+            # 이모티콘 존재하는 문장은 버리기
+            pass
+        
         sent_tokenized.append(temp)
 
     return sent_tokenized
@@ -89,6 +83,9 @@ def match_sentence_with_keyword(reviewzip, sentences, sent_tokenized, positive=T
 
     # (word, index)
     top_keywords = list(tokenizer.word_index.items())[:20]
+    # 그 중에서도 5번 이상 등장하는 키워드만 추림
+    word_count_dic = list(tokenizer.word_counts.items())
+    top_keywords = [keyword for idx, keyword in enumerate(top_keywords) if word_count_dic[idx][1] > 3]
 
     # 해당 토큰(키워드)가 존재하면 1, 없으면 0을 값으로 가지는 numpy matrix
     token_existance_mat = tokenizer.texts_to_matrix(sent_tokenized, mode='binary')
@@ -128,16 +125,27 @@ def make_reviewzip():
         return
 
     # Review 데이터 임시 생성
-    reviewzip = Review.objects.create(info=using_info)
+    try:
+        reviewzip = Review.objects.create(info=using_info)
+    except IntegrityError:
+        # 중간에 오류가 나서 ReviewInfo에 해당하는 Review 객체가 만들어진 경우
+        Review.objects.only('info').get(info=using_info).delete()
+        reviewzip = Review.objects.create(info=using_info)
 
-    # csv file read
-    reviews = read_csv_file(file_path)
+    # 리뷰 데이터 읽어 pandas 객체 만들기
+    print('reading csv file')
+    data = pd.read_csv(file_path, encoding='utf-8', names=['review', 'rating'])
+    # 중복된 데이터 제거
+    data.drop_duplicates(subset=['review'], inplace=True)
+
+    # review만 추출
+    reviews = data.review.values
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/okt_sentiment_model.h5', compile=False)
+    model = load_model('./models/rmsprop_okt_model.h5')
     # 토크나이저 불러오기
-    with open('./tokenizers/okt_tokenizer.pickle', 'rb') as handle:
+    with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     # 리뷰를 문장 단위로 쪼개기
@@ -169,8 +177,8 @@ def make_reviewzip():
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
-    pos_sent_tokenized = get_stemmed_sentences(pos_sents)
-    neg_sent_tokenized = get_stemmed_sentences(neg_sents)
+    pos_sent_tokenized = get_tokenized_sentences(pos_sents)
+    neg_sent_tokenized = get_tokenized_sentences(neg_sents)
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')
