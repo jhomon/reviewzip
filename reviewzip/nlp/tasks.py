@@ -16,8 +16,8 @@ from tensorflow.keras.models import load_model
 
 def sentiment_predict(new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
-    stopwords = ['도', '는', '다', '의', '가', '이', '은', '한', '에', '하', '고', '을', '를', '인', '듯', '과', '와', '네', '들', '듯', '지', '임', '게']
-    max_len = 80
+    stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
+    max_len = 50
 
     if jpype.isJVMStarted():  
         jpype.attachThreadToJVM()
@@ -125,9 +125,9 @@ def make_reviewzip():
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/sentiment_model.h5')
+    model = load_model('./models/okt_sentiment_model.h5')
     # 토크나이저 불러오기
-    with open('./tokenizers/sentiment_tokenizer.pickle', 'rb') as handle:
+    with open('./tokenizers/okt_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     # 리뷰를 문장 단위로 쪼개기
