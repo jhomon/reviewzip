@@ -36,7 +36,7 @@ def sentiment_predict(new_sentence, model, tokenizer):
 
 
 
-def get_stemmed_sentences(reviews):
+def get_stemmed_sentences(sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     if jpype.isJVMStarted():  
@@ -52,9 +52,9 @@ def get_stemmed_sentences(reviews):
     sent_tokenized = []
 
     # 토큰화된 문장 리스트 생성
-    for review in reviews:
+    for sentence in sentences:
         temp = []
-        for word, pos in kkma.pos(review, flatten=True):
+        for word, pos in kkma.pos(sentence, flatten=True):
             if pos in kkma_extracting_pos:
                 # 형용사는 끝에 '다'를 붙임
                 if pos in ['VA']:
@@ -123,6 +123,9 @@ def make_reviewzip():
     # 중복된 데이터 제거
     data.drop_duplicates(subset=['review'], inplace=True)
 
+    # review만 추출
+    reviews = data.review.values
+
     # 모델 불러오기
     print('loading model and tokenizer')
     model = load_model('./models/okt_sentiment_model.h5', compile=False)
@@ -136,7 +139,6 @@ def make_reviewzip():
     neg_sent_objs = [] # 부정 문장 Sentence 객체들
     pos_sents = [] # 긍정 키워드 추출을 위해 긍정 문장 모아놓은 배열
     neg_sents = [] # 부정 키워드 추출을 위해 부정 문장 모아놓은 배열
-    reviews = data.review.values
 
     for review in reviews:
         # 리뷰 하나를 여러 문장으로 나눕니다
