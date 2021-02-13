@@ -14,6 +14,19 @@ from tensorflow.keras.models import load_model
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
 
+def read_csv_file(file_path):
+    """ csv_file 읽고 reviews 반환 """
+    # 리뷰 데이터 읽어 pandas 객체 만들기
+    print('reading csv file')
+    data = pd.read_csv(file_path, encoding='utf-8', names=['review', 'rating'])
+    # 중복된 데이터 제거
+    data.drop_duplicates(subset=['review'], inplace=True)
+
+    # review만 추출
+    reviews = data.review.values
+    return reviews
+
+
 def sentiment_predict(new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
@@ -117,14 +130,8 @@ def make_reviewzip():
     # Review 데이터 임시 생성
     reviewzip = Review.objects.create(info=using_info)
 
-    # 리뷰 데이터 읽어 pandas 객체 만들기
-    print('reading csv file')
-    data = pd.read_csv(file_path, encoding='utf-8', names=['review', 'rating'])
-    # 중복된 데이터 제거
-    data.drop_duplicates(subset=['review'], inplace=True)
-
-    # review만 추출
-    reviews = data.review.values
+    # csv file read
+    reviews = read_csv_file(file_path)
 
     # 모델 불러오기
     print('loading model and tokenizer')
