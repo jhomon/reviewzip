@@ -17,6 +17,7 @@ requests==2.25.1
 selenium==3.141.0
 wheel==0.35
 tensorflow-cpu==2.4.1
+numpy==1.19.5
 whitenoise==5.2.0
 cloudinary==1.24.0
 django-cloudinary-storage==0.3.0
