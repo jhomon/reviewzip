@@ -37,14 +37,8 @@ def sentiment_predict(new_sentence, model, tokenizer):
 
 
 
-def get_tokenized_sentences(sentences):
+def get_tokenized_sentences(kkma, sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
-
-    if jpype.isJVMStarted():  
-        jpype.attachThreadToJVM()
-
-    # 너무 이상하게 쪼개면 다른 거 고려
-    kkma = Kkma()
 
     # 추출할 품사: 명사, 어근, 형용사
     kkma_extracting_pos = ['NNG', 'NNP', 'XR', 'UN', 'VA']
@@ -177,8 +171,15 @@ def make_reviewzip():
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
-    pos_sent_tokenized = get_tokenized_sentences(pos_sents)
-    neg_sent_tokenized = get_tokenized_sentences(neg_sents)
+    
+    if jpype.isJVMStarted():  
+        jpype.attachThreadToJVM()
+
+    # 너무 이상하게 쪼개면 다른 거 고려
+    kkma = Kkma()
+
+    pos_sent_tokenized = get_tokenized_sentences(kkma, pos_sents)
+    neg_sent_tokenized = get_tokenized_sentences(kkma, neg_sents)
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')
