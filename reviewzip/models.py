@@ -6,7 +6,7 @@ class ReviewInfo(models.Model):
     """ 리뷰에 대한 기본적인 정보 """
 
     name = models.CharField(max_length=50) # 상품명
-    file_path = models.FilePathField(path='review_files/', null=True) # csv 파일 경로
+    file_path = models.CharField(max_length=100) # csv 파일 경로
     url = models.URLField() # 해당 파일이 크롤링한 url
     thumbnail = models.ImageField(null=True, blank=True, upload_to="thumbnails/") # 제품 이미지
     used = models.BooleanField(default=False) # 해당 파일을 사용해서 Review 데이터를 만들었는지
