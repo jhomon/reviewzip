@@ -73,7 +73,7 @@ def match_sentence_with_keyword(reviewzip, sentences, sent_tokenized, positive=T
     # (word, index)
     top_keywords = list(tokenizer.word_index.items())[:20]
     # 그 중에서도 5번 이상 등장하는 키워드만 추림
-    word_count_dic = list(tokenizer.word_counts.items())
+    word_count_dic = list(tokenizer.word_counts.items())[:20]
     top_keywords = [keyword for idx, keyword in enumerate(top_keywords) if word_count_dic[idx][1] > 3]
 
     # 해당 토큰(키워드)가 존재하면 1, 없으면 0을 값으로 가지는 numpy matrix
@@ -102,9 +102,6 @@ def match_sentence_with_keyword(reviewzip, sentences, sent_tokenized, positive=T
 @shared_task
 def make_reviewzip():
     """ 아직 처리되지 않은 ReviewInfo로 Review 클래스 데이터 생성 """
-
-    if jpype.isJVMStarted():  
-        jpype.attachThreadToJVM()
 
     okt = Okt(max_heap_size=512)
 
