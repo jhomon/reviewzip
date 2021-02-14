@@ -140,15 +140,13 @@ def make_reviewzip():
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/rmsprop_okt_model.h5', compile=False)
+    model = load_model('./models/rmsprop_okt_model.h5')
     # 토크나이저 불러오기
     with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     # 리뷰를 문장 단위로 쪼개기
     print('spliting reviews with sentences')
-    pos_sent_objs = [] # 긍정 문장 Sentence 객체들 
-    neg_sent_objs = [] # 부정 문장 Sentence 객체들
     pos_sents = [] # 긍정 키워드 추출을 위해 긍정 문장 모아놓은 배열
     neg_sents = [] # 부정 키워드 추출을 위해 부정 문장 모아놓은 배열
 
@@ -160,18 +158,20 @@ def make_reviewzip():
         for sent in sents:
             sentiment = sentiment_predict(okt, sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
             if sentiment == 1:
-                pos_sent_objs.append(Sentence(content=sent)) # 긍정 문장
+                try:
+                    Sentence.objects.create(content=sent) # 긍정 문장
+                except:
+                    pass # 이미 존재하는 문장이거나 기타 이유로 에러 발생 시 no create
+
                 pos_sents.append(sent)
             else:
-                neg_sent_objs.append(Sentence(content=sent)) # 부정 문장
+                try:
+                    Sentence.objects.create(content=sent) # 긍정 문장
+                except:
+                    pass # 이미 존재하는 문장이거나 기타 이유로 에러 발생 시 no create
+
                 neg_sents.append(sent)
 
-
-    # 긍정 문장, 부정 문장 bulk create
-    # 기존에 데이터베이스에 존재하는 문장은 무시
-    print("sentece data bulk create")
-    Sentence.objects.bulk_create(pos_sent_objs, ignore_conflicts=True)
-    Sentence.objects.bulk_create(neg_sent_objs, ignore_conflicts=True)
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
