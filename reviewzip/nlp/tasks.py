@@ -15,11 +15,16 @@ from tensorflow.keras.models import load_model
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
 
-def sentiment_predict(okt, new_sentence, model, tokenizer):
+def sentiment_predict(new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
     max_len = 50
     
+    if jpype.isJVMStarted():  
+        jpype.attachThreadToJVM()
+
+    okt = Okt()
+
     new_sentence = okt.morphs(new_sentence) # 토큰화
     new_sentence = [word for word in new_sentence if not word in stopwords] # 불용어 제거
     encoded = tokenizer.texts_to_sequences([new_sentence]) # 정수 인코딩
@@ -144,18 +149,13 @@ def make_reviewzip():
     pos_sents = [] # 긍정 키워드 추출을 위해 긍정 문장 모아놓은 배열
     neg_sents = [] # 부정 키워드 추출을 위해 부정 문장 모아놓은 배열
 
-    print('loading okt')
-    if jpype.isJVMStarted():  
-        jpype.attachThreadToJVM()
-
-    okt = Okt()
 
     for review in reviews:
         # 리뷰 하나를 여러 문장으로 나눕니다
         sents = kss.split_sentences(review)
         # 각 문장에 대해 감성 분류
         for sent in sents:
-            sentiment = sentiment_predict(okt, sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
+            sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
             if sentiment == 1:
                 pos_sent_objs.append(Sentence(content=sent)) # 긍정 문장
                 pos_sents.append(sent)
