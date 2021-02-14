@@ -1,7 +1,7 @@
 from django.db.utils import IntegrityError
 from celery import shared_task
 from reviewzip.models import Review, Sentence, Keyword, ReviewInfo
-from konlpy.tag import Okt, Kkma
+from konlpy.tag import Okt, Komoran
 import kss
 import pickle
 import jpype
@@ -15,15 +15,10 @@ from tensorflow.keras.models import load_model
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
 
-def sentiment_predict(new_sentence, model, tokenizer):
+def sentiment_predict(okt, new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
     max_len = 50
-
-    if jpype.isJVMStarted():  
-        jpype.attachThreadToJVM()
-
-    okt = Okt()
     
     new_sentence = okt.morphs(new_sentence) # 토큰화
     new_sentence = [word for word in new_sentence if not word in stopwords] # 불용어 제거
@@ -37,11 +32,11 @@ def sentiment_predict(new_sentence, model, tokenizer):
 
 
 
-def get_tokenized_sentences(kkma, sentences):
+def get_tokenized_sentences(komoran, sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     # 추출할 품사: 명사, 어근, 형용사
-    kkma_extracting_pos = ['NNG', 'NNP', 'XR', 'UN', 'VA']
+    extracting_pos = ['NNG', 'NNP', 'XR', 'UN', 'VA']
 
     # reviews 내용이 없으면 빈 리스트 리턴
     sent_tokenized = []
@@ -51,15 +46,15 @@ def get_tokenized_sentences(kkma, sentences):
         temp = []
         # 이모티콘이 섞여 있으면 UnicodeDecodeError 발생
         try:
-            for word, pos in kkma.pos(sentence, flatten=True):
-                if pos in kkma_extracting_pos:
+            for word, pos in komoran.pos(sentence, flatten=True):
+                if pos in extracting_pos:
                     # 형용사는 끝에 '다'를 붙임
                     if pos in ['VA']:
                         word += '다'
                     # 품사 기준 추출할 단어이면 
                     temp.append(word)
-        except UnicodeDecodeError:
-            # 이모티콘 존재하는 문장은 버리기
+        except:
+            # 이모티콘 존재 등 문제가 되는 문장은 버리기
             pass
         
         sent_tokenized.append(temp)
@@ -149,12 +144,18 @@ def make_reviewzip():
     pos_sents = [] # 긍정 키워드 추출을 위해 긍정 문장 모아놓은 배열
     neg_sents = [] # 부정 키워드 추출을 위해 부정 문장 모아놓은 배열
 
+    print('loading okt')
+    if jpype.isJVMStarted():  
+        jpype.attachThreadToJVM()
+
+    okt = Okt()
+
     for review in reviews:
         # 리뷰 하나를 여러 문장으로 나눕니다
         sents = kss.split_sentences(review)
         # 각 문장에 대해 감성 분류
         for sent in sents:
-            sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
+            sentiment = sentiment_predict(okt, sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
             if sentiment == 1:
                 pos_sent_objs.append(Sentence(content=sent)) # 긍정 문장
                 pos_sents.append(sent)
@@ -171,15 +172,13 @@ def make_reviewzip():
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
-    
-    if jpype.isJVMStarted():  
-        jpype.attachThreadToJVM()
 
     # 너무 이상하게 쪼개면 다른 거 고려
-    kkma = Kkma()
+    print('loading komoran')
+    komoran = Komoran()
 
-    pos_sent_tokenized = get_tokenized_sentences(kkma, pos_sents)
-    neg_sent_tokenized = get_tokenized_sentences(kkma, neg_sents)
+    pos_sent_tokenized = get_tokenized_sentences(komoran, pos_sents)
+    neg_sent_tokenized = get_tokenized_sentences(komoran, neg_sents)
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')
