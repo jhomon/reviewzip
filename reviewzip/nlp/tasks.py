@@ -14,15 +14,8 @@ from tensorflow.keras.models import load_model
 
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
-if jpype.isJVMStarted():  
-    jpype.attachThreadToJVM()
 
-okt = Okt()
-
-# 너무 이상하게 쪼개면 다른 거 고려
-komoran = Komoran()
-
-def sentiment_predict(new_sentence, model, tokenizer):
+def sentiment_predict(okt, new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
     max_len = 50
@@ -39,7 +32,7 @@ def sentiment_predict(new_sentence, model, tokenizer):
 
 
 
-def get_tokenized_sentences(sentences):
+def get_tokenized_sentences(komoran, sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     # 추출할 품사: 명사, 어근, 형용사
@@ -110,6 +103,14 @@ def match_sentence_with_keyword(reviewzip, sentences, sent_tokenized, positive=T
 def make_reviewzip():
     """ 아직 처리되지 않은 ReviewInfo로 Review 클래스 데이터 생성 """
 
+    if jpype.isJVMStarted():  
+        jpype.attachThreadToJVM()
+
+    okt = Okt()
+
+    # 너무 이상하게 쪼개면 다른 거 고려
+    komoran = Komoran()
+
     # 먼저 만들어진 ReviewInfo부터 처리
     try:
         using_info = ReviewInfo.objects.filter(used=False)\
@@ -157,7 +158,7 @@ def make_reviewzip():
         sents = kss.split_sentences(review)
         # 각 문장에 대해 감성 분류
         for sent in sents:
-            sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
+            sentiment = sentiment_predict(okt, sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
             if sentiment == 1:
                 pos_sent_objs.append(Sentence(content=sent)) # 긍정 문장
                 pos_sents.append(sent)
@@ -174,8 +175,8 @@ def make_reviewzip():
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
-    pos_sent_tokenized = get_tokenized_sentences(pos_sents)
-    neg_sent_tokenized = get_tokenized_sentences(neg_sents)
+    pos_sent_tokenized = get_tokenized_sentences(komoran, pos_sents)
+    neg_sent_tokenized = get_tokenized_sentences(komoran, neg_sents)
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')
