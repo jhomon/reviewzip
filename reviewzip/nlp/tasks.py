@@ -15,10 +15,17 @@ from tensorflow.keras.models import load_model
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
 
-def sentiment_predict(new_sentence, model, tokenizer):
+def sentiment_predict(new_sentence):
     """ 긍정/부정 예측 """
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
     max_len = 50
+
+    # 모델 불러오기
+    #print('loading model and tokenizer')
+    model = load_model('./models/rmsprop_okt_model.h5')
+    # 토크나이저 불러오기
+    with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
+        tokenizer = pickle.load(handle)
 
     okt = Okt(max_heap_size=512)
 
@@ -135,12 +142,7 @@ def make_reviewzip():
     # review만 추출
     reviews = data.review.values
 
-    # 모델 불러오기
-    print('loading model and tokenizer')
-    model = load_model('./models/rmsprop_okt_model.h5')
-    # 토크나이저 불러오기
-    with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
-        tokenizer = pickle.load(handle)
+
 
     # 리뷰를 문장 단위로 쪼개기
     print('spliting reviews with sentences')
@@ -153,7 +155,7 @@ def make_reviewzip():
         sents = kss.split_sentences(review)
         # 각 문장에 대해 감성 분류
         for sent in sents:
-            sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
+            sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''))
             if sentiment == 1:
                 try:
                     Sentence.objects.create(content=sent) # 긍정 문장
