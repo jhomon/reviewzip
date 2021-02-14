@@ -36,7 +36,7 @@ def get_tokenized_sentences(komoran, sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     # 추출할 품사: 명사, 어근, 형용사
-    extracting_pos = ['NNG', 'NNP', 'XR', 'UN', 'VA']
+    extracting_pos = ['NNG', 'NNP', 'XR', 'NF', 'NA', 'VA']
 
     # reviews 내용이 없으면 빈 리스트 리턴
     sent_tokenized = []
