@@ -70,6 +70,10 @@ def crawling_start():
     chrome_options.add_argument('--no-sandbox')
     
     driver = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH', "chromedriver"), chrome_options=chrome_options)
+
+    # driver cookie 삭제
+    driver.delete_all_cookies()
+
     # driver 전체 화면
     driver.maximize_window()
 
