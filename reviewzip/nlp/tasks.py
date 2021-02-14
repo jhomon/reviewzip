@@ -1,7 +1,7 @@
 from django.db.utils import IntegrityError
 from celery import shared_task
 from reviewzip.models import Review, Sentence, Keyword, ReviewInfo
-from konlpy.tag import Okt, Komoran
+from konlpy.tag import Komoran
 import kss
 import pickle
 import jpype
@@ -15,17 +15,12 @@ from tensorflow.keras.models import load_model
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
 
-def sentiment_predict(new_sentence, model, tokenizer):
+def sentiment_predict(komoran, new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
-    stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
-    max_len = 50
-    
-    if jpype.isJVMStarted():  
-        jpype.attachThreadToJVM()
+    stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도', '을', '를','으로','자','에','와','한','하다']
+    max_len = 60
 
-    okt = Okt()
-
-    new_sentence = okt.morphs(new_sentence) # 토큰화
+    new_sentence = komoran.morphs(new_sentence) # 토큰화
     new_sentence = [word for word in new_sentence if not word in stopwords] # 불용어 제거
     encoded = tokenizer.texts_to_sequences([new_sentence]) # 정수 인코딩
     pad_new = pad_sequences(encoded, maxlen = max_len) # 패딩
@@ -37,14 +32,11 @@ def sentiment_predict(new_sentence, model, tokenizer):
 
 
 
-def get_tokenized_sentences(sentences):
+def get_tokenized_sentences(komoran, sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     # 추출할 품사: 명사, 어근, 형용사
     extracting_pos = ['NNG', 'NNP', 'XR', 'NF', 'NA', 'VA']
-
-    # 너무 이상하게 쪼개면 다른 거 고려
-    komoran = Komoran()
 
     # reviews 내용이 없으면 빈 리스트 리턴
     sent_tokenized = []
@@ -111,6 +103,11 @@ def match_sentence_with_keyword(reviewzip, sentences, sent_tokenized, positive=T
 def make_reviewzip():
     """ 아직 처리되지 않은 ReviewInfo로 Review 클래스 데이터 생성 """
 
+    if jpype.isJVMStarted():  
+        jpype.attachThreadToJVM()
+
+    # 너무 이상하게 쪼개면 다른 거 고려
+    komoran = Komoran()
 
     # 먼저 만들어진 ReviewInfo부터 처리
     try:
@@ -141,9 +138,9 @@ def make_reviewzip():
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/rmsprop_okt_model.h5')
+    model = load_model('./models/komoran_model.h5')
     # 토크나이저 불러오기
-    with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
+    with open('./tokenizers/komoran_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     # 리뷰를 문장 단위로 쪼개기
@@ -157,7 +154,7 @@ def make_reviewzip():
         sents = kss.split_sentences(review)
         # 각 문장에 대해 감성 분류
         for sent in sents:
-            sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
+            sentiment = sentiment_predict(komoran, sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
             if sentiment == 1:
                 try:
                     Sentence.objects.create(content=sent) # 긍정 문장
@@ -176,8 +173,8 @@ def make_reviewzip():
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
-    pos_sent_tokenized = get_tokenized_sentences(pos_sents)
-    neg_sent_tokenized = get_tokenized_sentences(neg_sents)
+    pos_sent_tokenized = get_tokenized_sentences(komoran, pos_sents)
+    neg_sent_tokenized = get_tokenized_sentences(komoran, neg_sents)
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')
