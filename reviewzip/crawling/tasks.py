@@ -55,6 +55,7 @@ def crawling_start():
     # 크롤링 가능한 url이 아니면 종료
     if not site_reg.search(crawling_url):
         pending_url.processed = True
+        pending_url.save()
         return
 
     """ 크롤링 가능한 경우 아래 실행 """

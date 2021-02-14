@@ -14,7 +14,7 @@ from tensorflow.keras.models import load_model
 
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
-
+@shared_task
 def sentiment_predict(new_sentence, model, tokenizer):
     """ 긍정/부정 예측 """
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
@@ -36,7 +36,7 @@ def sentiment_predict(new_sentence, model, tokenizer):
         return 0
 
 
-
+@shared_task
 def get_tokenized_sentences(sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
@@ -70,7 +70,7 @@ def get_tokenized_sentences(sentences):
     return sent_tokenized
 
 
-
+@shared_task
 def match_sentence_with_keyword(reviewzip, sentences, sent_tokenized, positive=True):
     """ 키워드랑 문장 매치시켜 데이터베이스에 키워드 저장 """
 
@@ -158,7 +158,7 @@ def make_reviewzip():
         sents = kss.split_sentences(review)
         # 각 문장에 대해 감성 분류
         for sent in sents:
-            sentiment = sentiment_predict(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
+            sentiment = sentiment_predict.delay(sent.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]',''), model, tokenizer)
             if sentiment == 1:
                 pos_sent_objs.append(Sentence(content=sent)) # 긍정 문장
                 pos_sents.append(sent)
@@ -175,15 +175,13 @@ def make_reviewzip():
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
-
-   
-    pos_sent_tokenized = get_tokenized_sentences(pos_sents)
-    neg_sent_tokenized = get_tokenized_sentences(neg_sents)
+    pos_sent_tokenized = get_tokenized_sentences.delay(pos_sents)
+    neg_sent_tokenized = get_tokenized_sentences.delay(neg_sents)
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')
-    reviewzip = match_sentence_with_keyword(reviewzip, pos_sents, pos_sent_tokenized, positive=True)
-    reviewzip = match_sentence_with_keyword(reviewzip, neg_sents, neg_sent_tokenized, positive=False)
+    reviewzip = match_sentence_with_keyword.delay(reviewzip, pos_sents, pos_sent_tokenized, positive=True)
+    reviewzip = match_sentence_with_keyword.delay(reviewzip, neg_sents, neg_sent_tokenized, positive=False)
     
     # reviewzip object 데이터베이스에 저장
     reviewzip.save()
