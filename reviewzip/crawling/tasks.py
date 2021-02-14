@@ -97,6 +97,7 @@ def crawling_start():
     f.close()
 
     # 크롤링이 끝나면 chrome 종료
+    driver.close()
     driver.quit()
 
     # pending_url processed 처리
