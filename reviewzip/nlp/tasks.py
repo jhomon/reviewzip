@@ -1,7 +1,7 @@
 from django.db.utils import IntegrityError
 from celery import shared_task
 from reviewzip.models import Review, Sentence, Keyword, ReviewInfo
-from konlpy.tag import Okt, Komoran
+from konlpy.tag import Okt
 import kss
 import pickle
 import jpype
@@ -11,7 +11,9 @@ import os
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
-
+from koalanlp.Util import initialize, finalize
+from koalanlp import API
+from koalanlp.proc import Tagger
 
 """ 이 아래부터는 리뷰 데이터 분석을 위한 함수들 """
 
@@ -20,7 +22,7 @@ def sentiment_predict(sentences, model, tokenizer):
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
     max_len = 50
 
-    komoran = Komoran()
+    okt = Okt()
 
     # 긍정 문장, 부정 문장 리스트
     pos_sents = []
@@ -32,7 +34,7 @@ def sentiment_predict(sentences, model, tokenizer):
         except:
             pass # 이미 존재하는 문장이거나 기타 이유로 에러 발생 시 no create
         
-        new_sentence = komoran.morphs(sentence.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]','')) # 토큰화
+        new_sentence = okt.morphs(sentence.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]','')) # 토큰화
         new_sentence = [word for word in new_sentence if not word in stopwords] # 불용어 제거
         encoded = tokenizer.texts_to_sequences([new_sentence]) # 정수 인코딩
         pad_new = pad_sequences(encoded, maxlen = max_len) # 패딩
@@ -46,14 +48,11 @@ def sentiment_predict(sentences, model, tokenizer):
 
 
 
-def get_tokenized_sentences(sentences):
+def get_tokenized_sentences(tagger, sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     # 추출할 품사: 명사, 어근, 형용사
     extracting_pos = ['NNG', 'NNP', 'XR', 'NF', 'NA', 'VA']
-
-    # 너무 이상하게 쪼개면 다른 거 고려
-    komoran = Komoran()
 
     # reviews 내용이 없으면 빈 리스트 리턴
     sent_tokenized = []
@@ -63,13 +62,16 @@ def get_tokenized_sentences(sentences):
         temp = []
         # 이모티콘이 섞여 있으면 UnicodeDecodeError 발생
         try:
-            for word, pos in komoran.pos(sentence, flatten=True):
-                if pos in extracting_pos:
-                    # 형용사는 끝에 '다'를 붙임
-                    if pos in ['VA']:
-                        word += '다'
-                    # 품사 기준 추출할 단어이면 
-                    temp.append(word)
+            for tagger_sent in tagger(sentence):
+                for word in tagger_sent:
+                    for morph in word:
+                        pos = morph.getTag()
+                        if pos in extracting_pos:
+                            # 형용사는 끝에 '다'를 붙임
+                            if pos in ['VA']:
+                                word += '다'
+                            # 품사 기준 추출할 단어이면 
+                            temp.append(morph.getSurface())
         except:
             # 이모티콘 존재 등 문제가 되는 문장은 버리기
             pass
@@ -149,9 +151,9 @@ def make_reviewzip():
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/komoran_model.h5')
+    model = load_model('./models/rmsprop_okt_model.h5')
     # 토크나이저 불러오기
-    with open('./tokenizers/komoran_tokenizer.pickle', 'rb') as handle:
+    with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
 
@@ -166,11 +168,17 @@ def make_reviewzip():
     # 각 문장에 대해 감성 분류
     pos_sents, neg_sents = sentiment_predict(sentences, model, tokenizer)
 
+    # koalanlp kmoran load
+    print('loading komoran')
+    initialize(KMR="LATEST")
+    tagger = Tagger(API.KMR, kmr_light=True)
 
     # 유의미한 품사의 단어만 가지는 tokenized sentence 
     print('getting tokenized sentences')
-    pos_sent_tokenized = get_tokenized_sentences(pos_sents)
-    neg_sent_tokenized = get_tokenized_sentences(neg_sents)
+    pos_sent_tokenized = get_tokenized_sentences(tagger, pos_sents)
+    neg_sent_tokenized = get_tokenized_sentences(tagger, neg_sents)
+
+    finalize()
 
     # 키워드 문장 매칭
     print('matching keywords with sentences')

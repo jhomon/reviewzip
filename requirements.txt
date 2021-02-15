@@ -21,3 +21,4 @@ numpy==1.19.5
 whitenoise==5.2.0
 cloudinary==1.24.0
 django-cloudinary-storage==0.3.0
+koalanlp==2.1.6

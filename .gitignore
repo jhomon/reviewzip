@@ -7,3 +7,4 @@ chromedriver.exe
 *.csv
 *.jpg
 debug_settings.py
+.java
