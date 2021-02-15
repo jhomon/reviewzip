@@ -1,7 +1,7 @@
 from django.db.utils import IntegrityError
 from celery import shared_task
 from reviewzip.models import Review, Sentence, Keyword, ReviewInfo
-from konlpy.tag import Okt, Komoran
+from konlpy.tag import Okt, Kkma
 import kss
 import pickle
 import jpype
@@ -50,10 +50,10 @@ def get_tokenized_sentences(sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     # 추출할 품사: 명사, 어근, 형용사
-    extracting_pos = ['NNG', 'NNP', 'XR', 'NF', 'NA', 'VA']
+    extracting_pos = ['NNG', 'NNP', 'XR', 'UN', 'VA']
 
     # 너무 이상하게 쪼개면 다른 거 고려
-    komoran = Komoran()
+    kkma = Kkma()
 
     # reviews 내용이 없으면 빈 리스트 리턴
     sent_tokenized = []
@@ -63,7 +63,7 @@ def get_tokenized_sentences(sentences):
         temp = []
         # 이모티콘이 섞여 있으면 UnicodeDecodeError 발생
         try:
-            for word, pos in komoran.pos(sentence, flatten=True):
+            for word, pos in kkma.pos(sentence, flatten=True):
                 if pos in extracting_pos:
                     # 형용사는 끝에 '다'를 붙임
                     if pos in ['VA']:
@@ -153,6 +153,7 @@ def make_reviewzip():
     # 토크나이저 불러오기
     with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
+
 
     # 리뷰를 문장 단위로 쪼개기
     print('spliting reviews with sentences')
