@@ -1,7 +1,7 @@
 from django.db.utils import IntegrityError
 from celery import shared_task
 from reviewzip.models import Review, Sentence, Keyword, ReviewInfo
-from konlpy.tag import Okt, Kkma
+from konlpy.tag import Okt, Komoran
 import kss
 import pickle
 import jpype
@@ -20,7 +20,7 @@ def sentiment_predict(sentences, model, tokenizer):
     stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
     max_len = 50
 
-    okt = Okt()
+    komoran = Komoran()
 
     # 긍정 문장, 부정 문장 리스트
     pos_sents = []
@@ -32,7 +32,7 @@ def sentiment_predict(sentences, model, tokenizer):
         except:
             pass # 이미 존재하는 문장이거나 기타 이유로 에러 발생 시 no create
         
-        new_sentence = okt.morphs(sentence.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]','')) # 토큰화
+        new_sentence = komoran.morphs(sentence.replace('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]','')) # 토큰화
         new_sentence = [word for word in new_sentence if not word in stopwords] # 불용어 제거
         encoded = tokenizer.texts_to_sequences([new_sentence]) # 정수 인코딩
         pad_new = pad_sequences(encoded, maxlen = max_len) # 패딩
@@ -50,10 +50,10 @@ def get_tokenized_sentences(sentences):
     """ 명사, 형용사만 가지는 토큰화된 문장 리스트를 반환 """
 
     # 추출할 품사: 명사, 어근, 형용사
-    extracting_pos = ['NNG', 'NNP', 'XR', 'UN', 'VA']
+    extracting_pos = ['NNG', 'NNP', 'XR', 'NF', 'NA', 'VA']
 
     # 너무 이상하게 쪼개면 다른 거 고려
-    kkma = Kkma()
+    komoran = Komoran()
 
     # reviews 내용이 없으면 빈 리스트 리턴
     sent_tokenized = []
@@ -63,7 +63,7 @@ def get_tokenized_sentences(sentences):
         temp = []
         # 이모티콘이 섞여 있으면 UnicodeDecodeError 발생
         try:
-            for word, pos in kkma.pos(sentence, flatten=True):
+            for word, pos in komoran.pos(sentence, flatten=True):
                 if pos in extracting_pos:
                     # 형용사는 끝에 '다'를 붙임
                     if pos in ['VA']:
@@ -149,9 +149,9 @@ def make_reviewzip():
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/rmsprop_okt_model.h5')
+    model = load_model('./models/komoran_model.h5')
     # 토크나이저 불러오기
-    with open('./tokenizers/rmsprop_tokenizer.pickle', 'rb') as handle:
+    with open('./tokenizers/komoran_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
 
