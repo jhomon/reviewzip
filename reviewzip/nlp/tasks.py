@@ -16,8 +16,8 @@ from PyKomoran import Komoran, DEFAULT_MODEL
 
 def sentiment_predict(komoran, sentences):
     """ 긍정/부정 예측 """
-    stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','를','으로','자','에','와','한','하다']
-    max_len = 50
+    stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','을','를','으로','자','에','와','한','하다']
+    max_len = 60
 
     # 모델 불러오기
     print('loading model and tokenizer')
@@ -163,6 +163,7 @@ def make_reviewzip():
     # koalanlp kmoran load
     print('loading komoran')
     komoran = Komoran(DEFAULT_MODEL['LIGHT'])
+    komoran.set_user_dic('reviewzip/nlp/user.dic')
 
     # 각 문장에 대해 감성 분류
     pos_sents, neg_sents = sentiment_predict(komoran, sentences)
