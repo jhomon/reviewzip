@@ -21,9 +21,9 @@ def sentiment_predict(komoran, sentences):
 
     # 모델 불러오기
     print('loading model and tokenizer')
-    model = load_model('./models/komoran_model.h5')
+    model = load_model('./models/komoran_adam_model.h5')
     # 토크나이저 불러오기
-    with open('./tokenizers/komoran_tokenizer.pickle', 'rb') as handle:
+    with open('./tokenizers/komoran_adam_tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     # 긍정 문장, 부정 문장 리스트
