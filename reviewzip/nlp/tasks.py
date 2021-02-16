@@ -16,8 +16,9 @@ from PyKomoran import Komoran, DEFAULT_MODEL
 
 def sentiment_predict(komoran, sentences):
     """ 긍정/부정 예측 """
-    stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','을','를','으로','자','에','와','한','하다']
-    max_len = 60
+    stopwords = ['의','가','이','은','들','는','좀','잘','걍','과','도','을','를','으로','자','에','와','한','하다',\
+        '하','고','았','있','ㄴ','네요','아요','어요','어','ㅂ니다','습니다','었','요','게','ㄹ','쓰','시','것','거']
+    max_len = 40
 
     # 모델 불러오기
     print('loading model and tokenizer')

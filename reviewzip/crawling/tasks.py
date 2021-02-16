@@ -192,6 +192,8 @@ def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
 
 def crawling_coupang(driver, crawling_url, regexp, f, wr, url_id):
     """ crawling_url을 주소로 쿠팡에 젒속해서 크롤링 후 ReviewFile 데이터 생성 """
+    
+    driver.implicitly_wait(5)
 
     # 화면을 읽은 뒤 bs4가 파싱
     html = driver.page_source
