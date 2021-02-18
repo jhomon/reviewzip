@@ -10,7 +10,6 @@ import os
 import datetime, time
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from reviewzip.nlp.tasks import make_reviewzip
@@ -61,8 +60,11 @@ def crawling_start():
     """ 크롤링 가능한 경우 아래 실행 """
 
     # driver 설정 - css, 이미지는 로드하지 않는다
+    user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'    
     chrome_options = Options()
     chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
+    chrome_options.add_argument('user-agent={0}'.format(user_agent))
+    chrome_options.add_argument("--log-level=1")
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument('window-size=1920x1080')
@@ -193,8 +195,6 @@ def crawling_musinsa(driver, crawling_url, regexp, f, wr, url_id):
 def crawling_coupang(driver, crawling_url, regexp, f, wr, url_id):
     """ crawling_url을 주소로 쿠팡에 젒속해서 크롤링 후 ReviewFile 데이터 생성 """
     
-    driver.implicitly_wait(5)
-
     # 화면을 읽은 뒤 bs4가 파싱
     html = driver.page_source
     soup = BeautifulSoup(html, 'lxml')
