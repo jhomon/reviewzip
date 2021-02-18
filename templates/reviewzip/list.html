@@ -55,6 +55,7 @@
         {% endif %}
     </ul>
 </nav>
+
 <!-- 검색 결과가 없을 때 -->
 {% else %}
 <div class="m-5 d-flex flex-column align-items-center">
@@ -69,6 +70,7 @@
 
     <h2 class="mb-5">해당 제품에 대한 리뷰집이 존재하지 않습니다</h2>
     <h5>리뷰집 데이터 추가를 원하신다면 리뷰가 있는 제품 페이지 url을 입력 후 버튼을 눌러주세요 </h5>
+    <h5 class="mt-2 font-weight-bold">현재 등록 가능한 url: 쿠팡, 무신사스토어</h5>
     <form action="{% url 'reviewzip:add_request' %}" method="post" class="form-group my-2 col-md-8 col-sm-12" style="width: 100%;">
         {% csrf_token %}
         <input type="url" id="product_url" name="product_url" 
@@ -76,5 +78,6 @@
         <button class="btn btn-primary mx-auto" type="submit" style="display:block;">추가 요청</button>
     </form>
 </div>
+
 {% endif %}
 {% endblock %}
