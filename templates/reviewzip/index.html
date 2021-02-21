@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block meta %}
+<meta name="description" content="리뷰 요약 사이트입니다. 리뷰 중에 긍정 키워드, 부정 키워드를 추출해 보여줍니다. 등록 가능한 url에 한해 리뷰를 등록 요청할 수 있습니다.">
+{% endblock %}
+
 {% block content %}
 <!-- 최신 리뷰집 5개 -->
 <div class="mb-5">

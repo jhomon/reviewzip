@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block meta %}
+<meta name="description" content="{{ object.info.name }} 제품에 대한 리뷰집">
+{% endblock %}
+
 {% block content %}
 <!-- 제품 기본 정보 -->
 <div class="mb-5 d-flex flex-column align-items-center">
